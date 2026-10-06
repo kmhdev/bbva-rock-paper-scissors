@@ -9,6 +9,7 @@ export const getStyles = (theme: ThemeColors) => {
       backgroundColor: theme.background,
       padding: 24,
       alignItems: 'center',
+      justifyContent: 'center',
       gap: 12,
     },
     topBar: {

@@ -10,7 +10,7 @@ export const getStyles = (theme: ThemeColors) => {
       paddingVertical: 16,
       paddingHorizontal: 8,
       borderRadius: 16,
-      backgroundColor: theme.card,
+      backgroundColor: theme.background,
       borderWidth: 2,
       borderColor: theme.border,
       gap: 8,

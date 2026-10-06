@@ -11,7 +11,7 @@ export const getStyles = (theme: ThemeColors) => {
       marginHorizontal: 'auto',
       padding: 16,
       borderRadius: 16,
-      backgroundColor: theme.card,
+      backgroundColor: theme.background,
       borderWidth: 1,
       borderColor: theme.border,
       gap: 4,
