@@ -24,6 +24,15 @@ export default [
   },
   js.configs.recommended,
   {
+    files: ['**/*.config.js', 'babel.config.js'],
+    languageOptions: {
+      sourceType: 'commonjs',
+    },
+    rules: {
+      'no-undef': 'off',
+    },
+  },
+  {
     files: ['**/*.ts', '**/*.tsx'],
     languageOptions: {
       parser: tsParser,

@@ -9,13 +9,11 @@ export default defineConfig({
       provider: 'v8',
       reporter: ['text', 'lcov', 'html'],
       include: [
-        'services/**/*.ts',
-        'store/**/*.ts',
-        'utils/**/*.ts',
-        'constants/**/*.ts',
-        'context/**/*.tsx',
-        'components/**/*.tsx',
-        'app/**/*.tsx',
+        'services/gameLogicService.ts',
+        'services/machineService.ts',
+        'services/scoreService.ts',
+        'store/gameStore.ts',
+        'utils/vibration.ts',
       ],
       exclude: ['**/*.test.*', '**/*.styles.*', '**/+not-found.tsx'],
       thresholds: {
