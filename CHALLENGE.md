@@ -169,7 +169,7 @@ Se valoran muy positivamente:
 
 Enlace al repositorio con el código y enlace con la aplicación desplegada.
 
-### *Bonus points*
+### _Bonus points_
 
 - Incluir vista de "ranking" con la máxima puntuación de cada jugador.
 - Jugar contra otro jugador en vez de contra la "máquina".

@@ -1,29 +1,38 @@
-import { Redirect, useRouter } from 'expo-router';
 import { useEffect, useRef } from 'react';
-import { Pressable, Text, View } from 'react-native';
-import ChoiceButton from '../components/ChoiceButton/ChoiceButton';
-import MainCard from '../components/MainCard/MainCard';
-import RoundResult from '../components/RoundResult/RoundResult';
-import ScoreBoard from '../components/ScoreBoard/ScoreBoard';
-import ThemeToggle from '../components/ThemeToggle/ThemeToggle';
-import { MACHINE_REVEAL_DELAY_MS } from '../constants/game.constants';
-import { useTheme } from '../context/ThemeContext';
-import { useIsMobilePlatform } from '../hooks/useIsMobilePlatform';
-import { getChoicesForMode } from '../services/gameLogicService';
-import { randomMachineStrategy, smartMachineStrategy } from '../services/machineStrategies';
-import { pushRemoteScore } from '../services/supabaseScoreStorage';
-import { useGameStore } from '../store/appStore';
-import type { Choice } from '../types/types';
-import { vibrateOnLoss } from '../utils/vibration';
-import { getStyles } from './game.styles';
+import { View } from 'react-native';
+import AppButton from '../../components/AppButton/AppButton';
+import ChoiceButton from '../../components/ChoiceButton/ChoiceButton';
+import SegmentedToggle from '../../components/SegmentedToggle/SegmentedToggle';
+import MainCard from '../../components/MainCard/MainCard';
+import RoundResult from '../../components/RoundResult/RoundResult';
+import ScoreBoard from '../../components/ScoreBoard/ScoreBoard';
+import ThemeToggle from '../../components/ThemeToggle/ThemeToggle';
+import { MACHINE_REVEAL_DELAY_MS } from '../../constants/game.constants';
+import { useNavigation } from '../../context/NavigationContext';
+import { useTheme } from '../../context/ThemeContext';
+import { useIsMobilePlatform } from '../../hooks/useIsMobilePlatform';
+import { getChoicesForMode } from '../../services/gameLogicService';
+import { randomMachineStrategy, smartMachineStrategy } from '../../services/machineStrategies';
+import { pushRemoteScore } from '../../services/supabaseScoreStorage';
+import { useGameStore } from '../../store/appStore';
+import type { Choice, SegmentedToggleOption } from '../../types/types';
+import { vibrateOnLoss } from '../../utils/vibration';
+import { getStyles } from './Game.styles';
+
+type HardModeValue = 'off' | 'on';
+
+const HARD_MODE_OPTIONS: ReadonlyArray<SegmentedToggleOption<HardModeValue>> = [
+  { value: 'off', label: 'OFF', accessibilityLabel: 'Desactivar máquina inteligente' },
+  { value: 'on', label: 'ON', accessibilityLabel: 'Activar máquina inteligente' },
+];
 
 /**
  * Game view: intentionally thin. It injects service A (scores, via the
  * store), service B (rules, inside the store) and service C (machine
  * strategies) and orchestrates them with the reveal delay.
  */
-export default function GameScreen() {
-  const router = useRouter();
+export default function GameView() {
+  const { setScreen } = useNavigation();
   const { theme } = useTheme();
   const isMobile = useIsMobilePlatform();
   const styles = getStyles(theme);
@@ -45,8 +54,14 @@ export default function GameScreen() {
     };
   }, []);
 
+  useEffect(() => {
+    if (playerName === null) {
+      setScreen('home');
+    }
+  }, [playerName, setScreen]);
+
   if (playerName === null) {
-    return <Redirect href="/" />;
+    return null;
   }
 
   const choices = getChoicesForMode(gameMode);
@@ -83,7 +98,7 @@ export default function GameScreen() {
       clearTimeout(revealTimer.current);
     }
     useGameStore.getState().exitToHome();
-    router.replace('/');
+    setScreen('home');
   };
 
   return (
@@ -95,6 +110,12 @@ export default function GameScreen() {
       )}
       <MainCard>
         <ScoreBoard playerName={playerName} score={score} />
+        <RoundResult
+          playerPick={playerPick}
+          machinePick={machinePick}
+          thinking={machineThinking}
+          outcome={outcome}
+        />
         <View style={choices.length > 3 ? styles.choicesRowWrapped : styles.choicesRow}>
           {choices.map((choice) => (
             <ChoiceButton
@@ -106,32 +127,15 @@ export default function GameScreen() {
             />
           ))}
         </View>
-        <RoundResult
-          playerPick={playerPick}
-          machinePick={machinePick}
-          thinking={machineThinking}
-          outcome={outcome}
+        <SegmentedToggle
+          value={smartMachine ? 'on' : 'off'}
+          options={HARD_MODE_OPTIONS}
+          onChange={(next) => useGameStore.getState().setSmartMachine(next === 'on')}
+          variant="compact"
+          topLabel="Hard mode"
+          disabled={machineThinking}
         />
-        <View style={styles.smartRow}>
-          <Text style={styles.smartLabel}>Máquina inteligente</Text>
-          <Pressable
-            accessibilityRole="switch"
-            accessibilityLabel="Activar máquina inteligente"
-            accessibilityState={{ checked: smartMachine }}
-            onPress={() => useGameStore.getState().setSmartMachine(!smartMachine)}
-            style={[styles.smartToggle, smartMachine && styles.smartToggleOn]}
-          >
-            <Text style={styles.smartToggleLabel}>{smartMachine ? 'ON' : 'OFF'}</Text>
-          </Pressable>
-        </View>
-        <Pressable
-          style={styles.exitButton}
-          accessibilityRole="button"
-          accessibilityLabel="Salir del juego"
-          onPress={handleExit}
-        >
-          <Text style={styles.exitButtonLabel}>Salir</Text>
-        </Pressable>
+        <AppButton title="Salir" accessibilityLabel="Salir del juego" onPress={handleExit} />
       </MainCard>
     </View>
   );

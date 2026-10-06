@@ -1,18 +1,20 @@
-import { Link } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Text, View } from 'react-native';
-import MainCard from '../components/MainCard/MainCard';
-import RankingRow from '../components/RankingRow/RankingRow';
-import ThemeToggle from '../components/ThemeToggle/ThemeToggle';
-import { useTheme } from '../context/ThemeContext';
-import { useIsMobilePlatform } from '../hooks/useIsMobilePlatform';
-import { fetchRemoteScores, mergeScores } from '../services/supabaseScoreStorage';
-import { getScoreService, useGameStore } from '../store/appStore';
-import type { PlayerScore } from '../types/types';
-import { getStyles } from './ranking.styles';
+import AppButton from '../../components/AppButton/AppButton';
+import MainCard from '../../components/MainCard/MainCard';
+import RankingRow from '../../components/RankingRow/RankingRow';
+import ThemeToggle from '../../components/ThemeToggle/ThemeToggle';
+import { useNavigation } from '../../context/NavigationContext';
+import { useTheme } from '../../context/ThemeContext';
+import { useIsMobilePlatform } from '../../hooks/useIsMobilePlatform';
+import { fetchRemoteScores, mergeScores } from '../../services/supabaseScoreStorage';
+import { getScoreService, useGameStore } from '../../store/appStore';
+import type { PlayerScore } from '../../types/types';
+import { getStyles } from './Ranking.styles';
 
 /** Bonus ranking view: best score per registered player (local + online). */
-export default function RankingScreen() {
+export default function RankingView() {
+  const { setScreen } = useNavigation();
   const { theme } = useTheme();
   const isMobile = useIsMobilePlatform();
   const styles = getStyles(theme);
@@ -65,9 +67,11 @@ export default function RankingScreen() {
             ))}
           </View>
         )}
-        <Link href={playerName === null ? '/' : '/game'} style={styles.backLink}>
-          Volver
-        </Link>
+        <AppButton
+          title="Volver"
+          accessibilityLabel="Volver"
+          onPress={() => setScreen(playerName === null ? 'home' : 'game')}
+        />
       </MainCard>
     </View>
   );

@@ -9,9 +9,7 @@ describe('ThemeContext', () => {
       useTheme();
       return null;
     };
-    await expect(render(<Boom />)).rejects.toThrow(
-      'useTheme must be used within a ThemeProvider',
-    );
+    await expect(render(<Boom />)).rejects.toThrow('useTheme must be used within a ThemeProvider');
   });
 
   it('exposes setTheme to switch explicitly', async () => {

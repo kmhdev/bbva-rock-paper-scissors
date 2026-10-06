@@ -22,11 +22,7 @@ export default function ThemeToggle() {
         onPress={handleThemeChange}
         style={({ pressed }) => [styles.themeToggle, pressed && styles.themeTogglePressed]}
       >
-        <Ionicons
-          name={isDark ? 'sunny-outline' : 'moon-outline'}
-          size={24}
-          color={theme.accent}
-        />
+        <Ionicons name={isDark ? 'sunny-outline' : 'moon-outline'} size={24} color={theme.accent} />
       </Pressable>
     </Animated.View>
   );

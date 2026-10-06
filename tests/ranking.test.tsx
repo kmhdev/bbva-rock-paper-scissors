@@ -1,38 +1,29 @@
 import { describe, expect, it, jest, beforeEach } from '@jest/globals';
-import { render, screen } from '@testing-library/react-native';
+import { fireEvent, render, screen } from '@testing-library/react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { ReactNode } from 'react';
 import { ThemeProvider } from '../context/ThemeContext';
 import { getScoreService, useGameStore } from '../store/appStore';
-import RankingScreen from '../app/ranking';
+import RankingView from '../views/Ranking/Ranking';
 
-jest.mock('expo-router', () => {
-  const mockReact = jest.requireActual('react') as typeof import('react');
-  const mockRN = jest.requireActual('react-native') as typeof import('react-native');
-  return {
-    useRouter: () => ({ replace: jest.fn(), push: jest.fn(), back: jest.fn() }),
-    Redirect: ({ href }: { href: string }) =>
-      mockReact.createElement(mockRN.Text, null, `redirect:${href}`),
-    Link: ({ children }: { children: ReactNode }) =>
-      mockReact.createElement(mockRN.Text, null, children),
-    Stack: Object.assign(
-      ({ children }: { children?: ReactNode }) =>
-        mockReact.createElement(mockReact.Fragment, null, children),
-      { Screen: () => null },
-    ),
-  };
-});
+const mockSetScreen = jest.fn();
+
+jest.mock('../context/NavigationContext', () => ({
+  useNavigation: () => ({ screen: 'ranking', setScreen: mockSetScreen }),
+  NavigationProvider: ({ children }: { children: ReactNode }) => children,
+}));
 
 async function renderRanking() {
   await render(
     <ThemeProvider>
-      <RankingScreen />
+      <RankingView />
     </ThemeProvider>,
   );
 }
 
 describe('RankingScreen', () => {
   beforeEach(async () => {
+    mockSetScreen.mockClear();
     await AsyncStorage.clear();
     useGameStore.setState({ playerName: null });
   });
@@ -55,5 +46,19 @@ describe('RankingScreen', () => {
     const pointCells = screen.getAllByText(/^(1 pto|[0-9]+ pts)$/);
     expect(pointCells.map((cell) => cell.children.join(''))).toEqual(['5 pts', '2 pts']);
     expect(screen.getByText('Volver')).toBeTruthy();
+  });
+
+  it('goes back to game when a session is active', async () => {
+    useGameStore.setState({ playerName: 'Ana' });
+    await renderRanking();
+    await fireEvent.press(screen.getByLabelText('Volver'));
+    expect(mockSetScreen).toHaveBeenCalledWith('game');
+  });
+
+  it('goes back home when there is no session', async () => {
+    useGameStore.setState({ playerName: null });
+    await renderRanking();
+    await fireEvent.press(screen.getByLabelText('Volver'));
+    expect(mockSetScreen).toHaveBeenCalledWith('home');
   });
 });

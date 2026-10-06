@@ -6,28 +6,16 @@ import { ThemeProvider } from '../context/ThemeContext';
 import type { Choice } from '../types/types';
 import { useGameStore } from '../store/appStore';
 import { vibrateOnLoss } from '../utils/vibration';
-import GameScreen from '../app/game';
+import GameView from '../views/Game/Game';
 
-const mockReplace = jest.fn();
+const mockSetScreen = jest.fn();
 let mockRandomPick: Choice = 'scissors';
 let mockSmartPick: Choice = 'paper';
 
-jest.mock('expo-router', () => {
-  const mockReact = jest.requireActual('react') as typeof import('react');
-  const mockRN = jest.requireActual('react-native') as typeof import('react-native');
-  return {
-    useRouter: () => ({ replace: mockReplace, push: jest.fn(), back: jest.fn() }),
-    Redirect: ({ href }: { href: string }) =>
-      mockReact.createElement(mockRN.Text, null, `redirect:${href}`),
-    Link: ({ children }: { children: ReactNode }) =>
-      mockReact.createElement(mockRN.Text, null, children),
-    Stack: Object.assign(
-      ({ children }: { children?: ReactNode }) =>
-        mockReact.createElement(mockReact.Fragment, null, children),
-      { Screen: () => null },
-    ),
-  };
-});
+jest.mock('../context/NavigationContext', () => ({
+  useNavigation: () => ({ screen: 'game', setScreen: mockSetScreen }),
+  NavigationProvider: ({ children }: { children: ReactNode }) => children,
+}));
 
 jest.mock('../services/machineStrategies', () => ({
   randomMachineStrategy: { name: 'random', pickMove: () => mockRandomPick },
@@ -55,7 +43,7 @@ function seedSession(partial?: Partial<ReturnType<typeof useGameStore.getState>>
 async function renderGame() {
   await render(
     <ThemeProvider>
-      <GameScreen />
+      <GameView />
     </ThemeProvider>,
   );
 }
@@ -70,7 +58,7 @@ async function playRound(choiceLabel: string) {
 describe('GameScreen', () => {
   beforeEach(() => {
     jest.useFakeTimers();
-    mockReplace.mockClear();
+    mockSetScreen.mockClear();
     mockRandomPick = 'scissors';
     mockSmartPick = 'paper';
     (vibrateOnLoss as jest.Mock).mockClear();
@@ -83,7 +71,7 @@ describe('GameScreen', () => {
   it('redirects home when there is no active player', async () => {
     useGameStore.setState({ playerName: null });
     await renderGame();
-    expect(screen.getByText('redirect:/')).toBeTruthy();
+    expect(mockSetScreen).toHaveBeenCalledWith('home');
   });
 
   it('shows name, score and the three classic choices', async () => {
@@ -154,6 +142,15 @@ describe('GameScreen', () => {
     expect(useGameStore.getState().smartMachine).toBe(true);
   });
 
+  it('disables the hard mode toggle while the machine is thinking', async () => {
+    seedSession({ playerPick: 'rock', machineThinking: true });
+    await renderGame();
+    const toggle = screen.getByLabelText('Activar máquina inteligente');
+    expect(toggle.props.accessibilityState.disabled).toBe(true);
+    await fireEvent.press(toggle);
+    expect(useGameStore.getState().smartMachine).toBe(false);
+  });
+
   it('shows five choices in extended mode', async () => {
     seedSession({ gameMode: 'extended' });
     await renderGame();
@@ -166,6 +163,6 @@ describe('GameScreen', () => {
     await renderGame();
     await fireEvent.press(screen.getByLabelText('Salir del juego'));
     expect(useGameStore.getState().playerName).toBeNull();
-    expect(mockReplace).toHaveBeenCalledWith('/');
+    expect(mockSetScreen).toHaveBeenCalledWith('home');
   });
 });

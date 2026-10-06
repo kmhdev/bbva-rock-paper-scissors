@@ -35,10 +35,6 @@
       "display": "standalone",
       "startUrl": "/"
     },
-    "plugins": [
-      "expo-router",
-      "expo-font",
-      "expo-asset"
-    ]
+    "plugins": ["expo-router", "expo-font", "expo-asset"]
   }
 }

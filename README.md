@@ -54,9 +54,10 @@ app funciona en modo avión: el service worker cachea el app-shell
 ## Estructura
 
 ```
-app/              # rutas expo-router: index (home /), game, ranking, +not-found (-> /)
+App.tsx          # punto único de entrada (como quiniela-native) + app/index.tsx (shim)
+views/            # Home, Game, Ranking (cada una: Vista.tsx + Vista.styles.ts)
 components/       # ChoiceButton, ScoreBoard, RoundResult, RankingRow (tsx + styles + test)
-context/          # ThemeContext (dark/light)
+context/          # ThemeContext (dark/light) + NavigationContext (home|game|ranking)
 store/            # gameStore (zustand factory testeable) + appStore (wiring prod)
 services/         # A scoreService, B gameLogicService, C machineService (+strategies)
 utils/            # vibration (haptics/web), pwa (registro SW)
@@ -160,8 +161,8 @@ Hay dos estrategias intercambiables con la misma interfaz (`services/machineServ
 
 ```ts
 interface MachineContext {
-  playerHistory: readonly Choice[];   // tus jugadas anteriores
-  machineHistory: readonly Choice[];  // jugadas anteriores de la máquina
+  playerHistory: readonly Choice[]; // tus jugadas anteriores
+  machineHistory: readonly Choice[]; // jugadas anteriores de la máquina
   availableChoices: readonly Choice[]; // 3 en clásico, 5 en extendido
 }
 interface MachineStrategy {
@@ -200,12 +201,11 @@ Se pidió explícitamente **React Native + TypeScript para webapp y móvil**,
 mobile-first con posibilidad nativa, **Zustand** y **ESLint**. Decisiones:
 
 - **Proyecto Expo único (no monorepo)**: igual que `quiniela-native`. Un solo
-  código sirve a web PWA (vía `react-native-web`), iOS y Android. Un monorepo
-  `apps/web + apps/mobile` duplicaría las vistas para este reto sin aportar nada:
-  las vistas ya son compartidas al 100%.
-- **Expo SDK 57 + expo-router**: rutas por ficheros (`/`, `/game`, `/ranking`,
-  `+not-found` → `/`), cumpliendo el requisito de _"cualquier ruta inexistente
-  redirige a home"_ sin lógica extra.
+  código sirve a web PWA (vía `react-native-web`), iOS y Android, con punto
+  único de entrada (`App.tsx` + `index.ts`, `app/index.tsx` es solo un shim
+  como en la quiniela). La navegación es por estado
+  (`context/NavigationContext`: `home | game | ranking`), sin file-routing:
+  más simple de ver a primera vista en `views/`.
 - **Zustand con `persist`**: estado de sesión (jugador, modo, racha) + estado de
   la ronda. La puntuación autoritativa vive en el servicio A (`ScoreService`
   sobre AsyncStorage, que en web es localStorage): una sola fuente de verdad,
@@ -216,8 +216,7 @@ mobile-first con posibilidad nativa, **Zustand** y **ESLint**. Decisiones:
 - **Doble runner de tests**: **vitest** para lógica pura (rápido, cobertura V8)
   y **jest + jest-expo** para vistas/componentes RN (el entry de RN usa sintaxis
   Flow que Vite no parsea). RNTL v14: `render`/`fireEvent` asíncronos. Los tests
-  de vistas viven en `tests/` y no en `app/`: expo-router empaquetaría
-  `app/*.test.tsx` como rutas y rompería el bundle web (lo detectó el e2e).
+  de vistas viven en `tests/` e importan de `views/`.
 - **E2E con Playwright** contra `dist/` servido en estático.
 - **ESLint 9** (pinado, porque `jsx-a11y@6` aún no soporta ESLint 10) con
   `typescript + react + hooks + jsx-a11y`, y Prettier idéntico a `quiniela-native`.

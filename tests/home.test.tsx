@@ -3,38 +3,26 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react-nativ
 import type { ReactNode } from 'react';
 import { ThemeProvider } from '../context/ThemeContext';
 import { getScoreService, useGameStore } from '../store/appStore';
-import HomeScreen from '../app/index';
+import HomeView from '../views/Home/Home';
 
-const mockReplace = jest.fn();
+const mockSetScreen = jest.fn();
 
-jest.mock('expo-router', () => {
-  const mockReact = jest.requireActual('react') as typeof import('react');
-  const mockRN = jest.requireActual('react-native') as typeof import('react-native');
-  return {
-    useRouter: () => ({ replace: mockReplace, push: jest.fn(), back: jest.fn() }),
-    Redirect: ({ href }: { href: string }) =>
-      mockReact.createElement(mockRN.Text, null, `redirect:${href}`),
-    Link: ({ children }: { children: ReactNode }) =>
-      mockReact.createElement(mockRN.Text, null, children),
-    Stack: Object.assign(
-      ({ children }: { children?: ReactNode }) =>
-        mockReact.createElement(mockReact.Fragment, null, children),
-      { Screen: () => null },
-    ),
-  };
-});
+jest.mock('../context/NavigationContext', () => ({
+  useNavigation: () => ({ screen: 'home', setScreen: mockSetScreen }),
+  NavigationProvider: ({ children }: { children: ReactNode }) => children,
+}));
 
 async function renderHome() {
   await render(
     <ThemeProvider>
-      <HomeScreen />
+      <HomeView />
     </ThemeProvider>,
   );
 }
 
 describe('HomeScreen', () => {
   beforeEach(async () => {
-    mockReplace.mockClear();
+    mockSetScreen.mockClear();
     useGameStore.setState({
       playerName: null,
       score: 0,
@@ -62,17 +50,15 @@ describe('HomeScreen', () => {
     await renderHome();
     await fireEvent.changeText(screen.getByPlaceholderText('Tu nombre'), 'a');
     await fireEvent.press(screen.getByLabelText('Empezar a jugar'));
-    expect(
-      await screen.findByText('Introduce un nombre con al menos 2 caracteres.'),
-    ).toBeTruthy();
-    expect(mockReplace).not.toHaveBeenCalled();
+    expect(await screen.findByText('Introduce un nombre con al menos 2 caracteres.')).toBeTruthy();
+    expect(mockSetScreen).not.toHaveBeenCalled();
   });
 
   it('registers a new player and navigates to game', async () => {
     await renderHome();
     await fireEvent.changeText(screen.getByPlaceholderText('Tu nombre'), 'Ana');
     await fireEvent.press(screen.getByLabelText('Empezar a jugar'));
-    await waitFor(() => expect(mockReplace).toHaveBeenCalledWith('/game'));
+    await waitFor(() => expect(mockSetScreen).toHaveBeenCalledWith('game'));
     expect(useGameStore.getState().playerName).toBe('Ana');
   });
 
@@ -81,7 +67,7 @@ describe('HomeScreen', () => {
     await renderHome();
     await fireEvent.changeText(screen.getByPlaceholderText('Tu nombre'), 'kike');
     await fireEvent.press(screen.getByLabelText('Empezar a jugar'));
-    await waitFor(() => expect(mockReplace).toHaveBeenCalledWith('/game'));
+    await waitFor(() => expect(mockSetScreen).toHaveBeenCalledWith('game'));
     expect(useGameStore.getState().score).toBe(7);
   });
 
@@ -94,6 +80,12 @@ describe('HomeScreen', () => {
   it('redirects to game when a session is already active', async () => {
     useGameStore.setState({ playerName: 'Ana' });
     await renderHome();
-    await waitFor(() => expect(mockReplace).toHaveBeenCalledWith('/game'));
+    await waitFor(() => expect(mockSetScreen).toHaveBeenCalledWith('game'));
+  });
+
+  it('navigates to ranking', async () => {
+    await renderHome();
+    await fireEvent.press(screen.getByLabelText('Ver ranking'));
+    expect(mockSetScreen).toHaveBeenCalledWith('ranking');
   });
 });

@@ -46,9 +46,7 @@ const INITIAL_ROUND = {
 export function createGameStore(scoreService: ScoreService, storage?: StateStorage) {
   const initializer = (
     set: (
-      partial:
-        | Partial<GameStoreState>
-        | ((state: GameStoreState) => Partial<GameStoreState>),
+      partial: Partial<GameStoreState> | ((state: GameStoreState) => Partial<GameStoreState>),
     ) => void,
     get: () => GameStoreState,
   ): GameStoreState => ({

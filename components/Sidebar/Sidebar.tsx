@@ -1,7 +1,8 @@
-import { usePathname, useRouter } from 'expo-router';
 import { Animated, Pressable, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import { useNavigation } from '../../context/NavigationContext';
+import type { Screen } from '../../types/types';
 import { useTheme } from '../../context/ThemeContext';
 import { useIsMobilePlatform } from '../../hooks/useIsMobilePlatform';
 import { useGameStore } from '../../store/appStore';
@@ -10,16 +11,15 @@ import { useSidebarLogic, useThemeFade } from './Sidebar.helpers';
 import { getOverlayAnimatedStyle } from './Sidebar.styles';
 
 const MENU_ROUTES = [
-  { route: '/', label: 'Inicio', icon: 'home-outline' },
-  { route: '/game', label: 'Juego', icon: 'game-controller-outline' },
-  { route: '/ranking', label: 'Ranking', icon: 'trophy-outline' },
+  { screen: 'home' as Screen, label: 'Inicio', icon: 'home-outline' },
+  { screen: 'game' as Screen, label: 'Juego', icon: 'game-controller-outline' },
+  { screen: 'ranking' as Screen, label: 'Ranking', icon: 'trophy-outline' },
 ] as const;
 
 export default function Sidebar({ open, onClose }: SidebarProps) {
   const { theme, toggleTheme } = useTheme();
   const isMobile = useIsMobilePlatform();
-  const router = useRouter();
-  const pathname = usePathname();
+  const { screen, setScreen } = useNavigation();
   const playerName = useGameStore((state) => state.playerName);
   const { panResponder, styles, animatedLeft, showOverlay, overlayAnim, handleOverlayClose } =
     useSidebarLogic({ open, onClose, theme });
@@ -52,15 +52,15 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
             </View>
             <View style={styles.menu}>
               {MENU_ROUTES.map((item) => {
-                const isActive = pathname === item.route;
+                const isActive = screen === item.screen;
                 return (
                   <Pressable
-                    key={item.route}
+                    key={item.screen}
                     style={styles.menuItem}
                     accessibilityRole="button"
                     accessibilityLabel={item.label}
                     onPress={() => {
-                      router.replace(item.route);
+                      setScreen(item.screen);
                       onClose();
                     }}
                   >

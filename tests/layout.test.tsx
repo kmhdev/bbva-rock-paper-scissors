@@ -3,18 +3,7 @@ import { render } from '@testing-library/react-native';
 import type { ReactNode } from 'react';
 import type { StyleProp, ViewStyle } from 'react-native';
 import { registerServiceWorker } from '../utils/pwa';
-import RootLayout from '../app/_layout';
-
-jest.mock('expo-router', () => {
-  const mockReact = jest.requireActual('react') as typeof import('react');
-  return {
-    Stack: Object.assign(
-      ({ children }: { children?: ReactNode }) =>
-        mockReact.createElement(mockReact.Fragment, null, children),
-      { Screen: () => null },
-    ),
-  };
-});
+import App from '../App';
 
 jest.mock('react-native-gesture-handler', () => {
   const mockReact = jest.requireActual('react') as typeof import('react');
@@ -32,9 +21,9 @@ jest.mock('react-native-gesture-handler', () => {
 
 jest.mock('../utils/pwa', () => ({ registerServiceWorker: jest.fn() }));
 
-describe('RootLayout', () => {
+describe('App', () => {
   it('registers the offline service worker on mount', async () => {
-    await render(<RootLayout />);
+    await render(<App />);
     expect(registerServiceWorker).toHaveBeenCalledTimes(1);
   });
 });

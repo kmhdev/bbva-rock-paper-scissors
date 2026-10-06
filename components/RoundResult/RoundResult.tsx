@@ -18,7 +18,12 @@ const OUTCOME_MESSAGE: Record<RoundOutcome, string> = {
 };
 
 /** Shows the player pick, the machine pick (after its delay) and the verdict. */
-export default function RoundResult({ playerPick, machinePick, thinking, outcome }: RoundResultProps) {
+export default function RoundResult({
+  playerPick,
+  machinePick,
+  thinking,
+  outcome,
+}: RoundResultProps) {
   const { theme } = useTheme();
   const styles = getStyles(theme);
 
@@ -31,7 +36,11 @@ export default function RoundResult({ playerPick, machinePick, thinking, outcome
   }
 
   const outcomeStyle =
-    outcome === 'win' ? styles.outcomeWin : outcome === 'lose' ? styles.outcomeLose : styles.outcomeDraw;
+    outcome === 'win'
+      ? styles.outcomeWin
+      : outcome === 'lose'
+        ? styles.outcomeLose
+        : styles.outcomeDraw;
 
   return (
     <View style={styles.roundResult}>
@@ -45,7 +54,9 @@ export default function RoundResult({ playerPick, machinePick, thinking, outcome
           Máquina: {CHOICE_META[machinePick].emoji} {CHOICE_META[machinePick].label}
         </Text>
       )}
-      {!thinking && outcome !== null && <Text style={outcomeStyle}>{OUTCOME_MESSAGE[outcome]}</Text>}
+      {!thinking && outcome !== null && (
+        <Text style={outcomeStyle}>{OUTCOME_MESSAGE[outcome]}</Text>
+      )}
     </View>
   );
 }
