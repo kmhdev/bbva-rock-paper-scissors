@@ -15,6 +15,7 @@ export default [
       'web-build/',
       'node_modules/',
       'coverage/',
+      'public/',
       '.expo/',
       '.expo-shared/',
       'babel.config.js',
@@ -24,7 +25,7 @@ export default [
   },
   js.configs.recommended,
   {
-    files: ['**/*.config.js', 'babel.config.js'],
+    files: ['**/*.config.js', 'babel.config.js', 'jest.setup.js'],
     languageOptions: {
       sourceType: 'commonjs',
     },

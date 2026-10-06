@@ -24,6 +24,14 @@ export const BEATS: Record<Choice, readonly Choice[]> = {
   spock: ['rock', 'scissors'],
 };
 
+/** UI metadata per choice: Spanish labels, emoji and accessible names. */
+export const CHOICE_META: Record<Choice, { label: string; emoji: string; actionLabel: string }> = {
+  rock: { label: 'Piedra', emoji: '✊', actionLabel: 'Elegir piedra' },
+  paper: { label: 'Papel', emoji: '✋', actionLabel: 'Elegir papel' },
+  scissors: { label: 'Tijera', emoji: '✌️', actionLabel: 'Elegir tijera' },
+  lizard: { label: 'Lagarto', emoji: '🦎', actionLabel: 'Elegir lagarto' },
+  spock: { label: 'Spock', emoji: '🖖', actionLabel: 'Elegir Spock' },
+};
 /** Minimum delay (ms) before the machine reveals its pick. */
 export const MACHINE_REVEAL_DELAY_MS = 1200;
 

@@ -1,5 +1,6 @@
 module.exports = {
   preset: 'jest-expo',
+  setupFiles: ['./jest.setup.js'],
   testMatch: ['**/*.test.tsx'],
   testPathIgnorePatterns: ['/node_modules/', '/dist/', '/web-build/'],
   collectCoverageFrom: [
