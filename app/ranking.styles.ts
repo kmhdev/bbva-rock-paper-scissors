@@ -10,6 +10,11 @@ export const getStyles = (theme: ThemeColors) => {
       alignItems: 'center',
       gap: 12,
     },
+    topBar: {
+      width: '100%',
+      flexDirection: 'row',
+      justifyContent: 'flex-end',
+    },
     rankingTitle: {
       color: theme.text,
       fontSize: 24,

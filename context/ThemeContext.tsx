@@ -1,53 +1,68 @@
-import { createContext, useContext, useMemo, useState, type ReactNode } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import type { ReactNode } from 'react';
+import { DARK_THEME, LIGHT_THEME } from '../constants/theme.constants';
 import type { ThemeColors } from '../types/types';
-
-const DARK_THEME: ThemeColors = {
-  background: '#181a1f',
-  card: '#23262d',
-  text: '#ffffff',
-  textMuted: '#9aa0aa',
-  accent: '#6c63ff',
-  danger: '#e5484d',
-  success: '#30a46c',
-  border: '#34383f',
-};
-
-const LIGHT_THEME: ThemeColors = {
-  background: '#f7f7fa',
-  card: '#ffffff',
-  text: '#181a1f',
-  textMuted: '#5b606a',
-  accent: '#6c63ff',
-  danger: '#e5484d',
-  success: '#18794e',
-  border: '#e2e4e9',
-};
+import { getStoredTheme, setStoredTheme } from '../services/themeHelpers';
+import { syncWebDocumentPresentation } from '../services/webDocumentPresentation';
 
 interface ThemeContextValue {
   theme: ThemeColors;
   isDark: boolean;
+  setTheme: (theme: ThemeColors) => void;
   toggleTheme: () => void;
 }
 
-const ThemeContext = createContext<ThemeContextValue>({
-  theme: DARK_THEME,
-  isDark: true,
-  toggleTheme: () => {},
-});
+const ThemeContext = createContext<ThemeContextValue | undefined>(undefined);
 
+/**
+ * Theme provider (ported from quiniela-native): named dark/light themes,
+ * persisted across restarts, web document chrome in sync. Renders nothing
+ * until the stored theme has been read to avoid a theme flash.
+ */
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [isDark, setIsDark] = useState(true);
+  const [theme, setThemeState] = useState<ThemeColors>(DARK_THEME);
+  const [isReady, setIsReady] = useState(false);
+
+  useEffect(() => {
+    getStoredTheme().then((stored) => {
+      setThemeState(stored === 'dark' ? DARK_THEME : LIGHT_THEME);
+      setIsReady(true);
+    });
+  }, []);
+
+  useEffect(() => {
+    syncWebDocumentPresentation(theme.background);
+  }, [theme.background]);
+
+  const setTheme = useCallback((nextTheme: ThemeColors) => {
+    setThemeState(nextTheme);
+  }, []);
+
+  const toggleTheme = useCallback(() => {
+    setThemeState((previous) => {
+      const nextTheme = previous.name === 'light' ? DARK_THEME : LIGHT_THEME;
+      void setStoredTheme(nextTheme.name);
+      return nextTheme;
+    });
+  }, []);
+
   const value = useMemo<ThemeContextValue>(
     () => ({
-      theme: isDark ? DARK_THEME : LIGHT_THEME,
-      isDark,
-      toggleTheme: () => setIsDark((previous) => !previous),
+      theme,
+      isDark: theme.name === 'dark',
+      setTheme,
+      toggleTheme,
     }),
-    [isDark],
+    [theme, setTheme, toggleTheme],
   );
+
+  if (!isReady) return null;
+
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
 }
 
 export function useTheme(): ThemeContextValue {
-  return useContext(ThemeContext);
+  const context = useContext(ThemeContext);
+  if (!context) throw new Error('useTheme must be used within a ThemeProvider');
+  return context;
 }

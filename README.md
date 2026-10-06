@@ -132,13 +132,27 @@ Sin configurar, la app funciona 100% offline. Para activar el ranking online:
 3. Al ganar una ronda se sube tu mejor marca (`upsert` solo si la superas);
    el ranking fusiona local + remoto quedándose con la mejor por jugador.
 
-## Accesibilidad y maquetación
+## Accesibilidad, maquetación y tema
 
 - Roles/estados: `button`, `radio` (modo), `switch` (IA), `header`, más
   `accessibilityLabel` en español y estados `selected/disabled/checked`.
-- `ThemeContext` dark/light, `SafeAreaProvider`, etiquetas de texto reales
-  (renderizan semántica web en RN-web). Sin `div`: todo son `View/Text` con
-  estilos por componente (`*.styles.ts`, convención BEM-like por nombres).
+- Sin `div`: todo son `View/Text` con estilos por componente (`*.styles.ts`,
+  convención BEM-like por nombres).
+
+### Theme toggle (portado de `quiniela-native`)
+
+Botón `ThemeToggle` arriba a la derecha en home, game y ranking: icono
+**sol** en modo oscuro y **luna** en modo claro (`Ionicons`
+`sunny-outline`/`moon-outline`), con la misma animación de fade (2x180ms, el
+tema cambia a mitad del fundido) que el `ToolbarWeb` de la quiniela.
+
+- Temas con nombre (`constants/theme.constants.ts`): `DARK_THEME` (`#181a1f`,
+  por defecto) y `LIGHT_THEME`.
+- Persistencia en `services/themeHelpers.ts` (`@bbva-rps:theme` en
+  AsyncStorage): al cerrar y reabrir se mantiene tu tema. El `ThemeProvider`
+  no renderiza hasta haberlo leído (evita el flashazo de tema).
+- En web, `services/webDocumentPresentation.ts` sincroniza el fondo del
+  `document` y el `meta theme-color` con el tema activo.
 
 ## Cómo funciona la máquina inteligente
 

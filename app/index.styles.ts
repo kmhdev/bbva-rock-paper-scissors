@@ -11,6 +11,11 @@ export const getStyles = (theme: ThemeColors) => {
       justifyContent: 'center',
       gap: 16,
     },
+    topBar: {
+      width: '100%',
+      flexDirection: 'row',
+      justifyContent: 'flex-end',
+    },
     homeTitle: {
       color: theme.text,
       fontSize: 26,

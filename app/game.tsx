@@ -4,6 +4,7 @@ import { Pressable, Text, View } from 'react-native';
 import ChoiceButton from '../components/ChoiceButton/ChoiceButton';
 import RoundResult from '../components/RoundResult/RoundResult';
 import ScoreBoard from '../components/ScoreBoard/ScoreBoard';
+import ThemeToggle from '../components/ThemeToggle/ThemeToggle';
 import { MACHINE_REVEAL_DELAY_MS } from '../constants/game.constants';
 import { useTheme } from '../context/ThemeContext';
 import { getChoicesForMode } from '../services/gameLogicService';
@@ -84,6 +85,9 @@ export default function GameScreen() {
 
   return (
     <View style={styles.gameScreen}>
+      <View style={styles.topBar}>
+        <ThemeToggle />
+      </View>
       <ScoreBoard playerName={playerName} score={score} />
       <View style={choices.length > 3 ? styles.choicesRowWrapped : styles.choicesRow}>
         {choices.map((choice) => (

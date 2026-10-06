@@ -10,6 +10,11 @@ export const getStyles = (theme: ThemeColors) => {
       alignItems: 'center',
       gap: 16,
     },
+    topBar: {
+      width: '100%',
+      flexDirection: 'row',
+      justifyContent: 'flex-end',
+    },
     choicesRow: {
       flexDirection: 'row',
       width: '100%',

@@ -1,6 +1,7 @@
 import { Link, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Pressable, Text, TextInput, View } from 'react-native';
+import ThemeToggle from '../components/ThemeToggle/ThemeToggle';
 import { useTheme } from '../context/ThemeContext';
 import { useGameStore } from '../store/appStore';
 import type { GameMode } from '../types/types';
@@ -41,6 +42,9 @@ export default function HomeScreen() {
 
   return (
     <View style={styles.homeScreen}>
+      <View style={styles.topBar}>
+        <ThemeToggle />
+      </View>
       <Text style={styles.homeTitle}>Piedra, papel o tijera</Text>
       <Text style={styles.homeSubtitle}>Introduce tu nombre para jugar</Text>
       <TextInput

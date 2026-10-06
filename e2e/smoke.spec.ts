@@ -23,3 +23,20 @@ test('ranking loads from home', async ({ page }) => {
   await page.getByText('Ver ranking').click();
   await expect(page.getByText('Ranking', { exact: true })).toBeVisible();
 });
+
+test('theme toggle switches theme and persists across reloads', async ({ page }) => {
+  await page.goto('/');
+  await expect(page.getByText('Piedra, papel o tijera')).toBeVisible();
+
+  await page.getByRole('button', { name: 'Cambiar tema' }).click();
+
+  // El tema cambia al completar la animación de fade (2x180ms)
+  await expect
+    .poll(() => page.evaluate(() => localStorage.getItem('@bbva-rps:theme')))
+    .toBe('light');
+
+  await page.reload();
+  await expect(page.getByText('Piedra, papel o tijera')).toBeVisible();
+  const storedAfterReload = await page.evaluate(() => localStorage.getItem('@bbva-rps:theme'));
+  expect(storedAfterReload).toBe('light');
+});

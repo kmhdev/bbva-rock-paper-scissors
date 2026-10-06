@@ -2,6 +2,7 @@ import { Link } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Text, View } from 'react-native';
 import RankingRow from '../components/RankingRow/RankingRow';
+import ThemeToggle from '../components/ThemeToggle/ThemeToggle';
 import { useTheme } from '../context/ThemeContext';
 import { fetchRemoteScores, mergeScores } from '../services/supabaseScoreStorage';
 import { getScoreService, useGameStore } from '../store/appStore';
@@ -34,6 +35,9 @@ export default function RankingScreen() {
 
   return (
     <View style={styles.rankingScreen}>
+      <View style={styles.topBar}>
+        <ThemeToggle />
+      </View>
       <Text style={styles.rankingTitle}>Ranking</Text>
       {loading ? (
         <Text style={styles.rankingLoading}>Cargando puntuaciones…</Text>

@@ -8,7 +8,10 @@ export type GameMode = 'classic' | 'extended';
 
 export type RoundOutcome = 'win' | 'lose' | 'draw';
 
+export type ThemeName = 'light' | 'dark';
+
 export interface ThemeColors {
+  name: ThemeName;
   background: string;
   card: string;
   text: string;

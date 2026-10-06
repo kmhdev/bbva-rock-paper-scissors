@@ -12,6 +12,8 @@ export default defineConfig({
         'services/gameLogicService.ts',
         'services/machineService.ts',
         'services/scoreService.ts',
+        'services/themeHelpers.ts',
+        'services/webDocumentPresentation.ts',
         'store/gameStore.ts',
         'utils/vibration.ts',
       ],
