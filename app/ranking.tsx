@@ -1,6 +1,7 @@
 import { Link } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Text, View } from 'react-native';
+import MainCard from '../components/MainCard/MainCard';
 import RankingRow from '../components/RankingRow/RankingRow';
 import ThemeToggle from '../components/ThemeToggle/ThemeToggle';
 import { useTheme } from '../context/ThemeContext';
@@ -38,26 +39,30 @@ export default function RankingScreen() {
       <View style={styles.topBar}>
         <ThemeToggle />
       </View>
-      <Text style={styles.rankingTitle}>Ranking</Text>
-      {loading ? (
-        <Text style={styles.rankingLoading}>Cargando puntuaciones…</Text>
-      ) : scores.length === 0 ? (
-        <Text style={styles.rankingEmpty}>Aún no hay puntuaciones. ¡Sé la primera persona en jugar!</Text>
-      ) : (
-        <View style={styles.rankingList}>
-          {scores.map((entry, index) => (
-            <RankingRow
-              key={entry.username.toLowerCase()}
-              position={index + 1}
-              username={entry.username}
-              score={entry.score}
-            />
-          ))}
-        </View>
-      )}
-      <Link href={playerName === null ? '/' : '/game'} style={styles.backLink}>
-        Volver
-      </Link>
+      <MainCard>
+        <Text style={styles.rankingTitle}>Ranking</Text>
+        {loading ? (
+          <Text style={styles.rankingLoading}>Cargando puntuaciones…</Text>
+        ) : scores.length === 0 ? (
+          <Text style={styles.rankingEmpty}>
+            Aún no hay puntuaciones. ¡Sé la primera persona en jugar!
+          </Text>
+        ) : (
+          <View style={styles.rankingList}>
+            {scores.map((entry, index) => (
+              <RankingRow
+                key={entry.username.toLowerCase()}
+                position={index + 1}
+                username={entry.username}
+                score={entry.score}
+              />
+            ))}
+          </View>
+        )}
+        <Link href={playerName === null ? '/' : '/game'} style={styles.backLink}>
+          Volver
+        </Link>
+      </MainCard>
     </View>
   );
 }

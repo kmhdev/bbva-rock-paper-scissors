@@ -1,6 +1,7 @@
 import { Link, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Pressable, Text, TextInput, View } from 'react-native';
+import MainCard from '../components/MainCard/MainCard';
 import ThemeToggle from '../components/ThemeToggle/ThemeToggle';
 import { useTheme } from '../context/ThemeContext';
 import { useGameStore } from '../store/appStore';
@@ -45,45 +46,47 @@ export default function HomeScreen() {
       <View style={styles.topBar}>
         <ThemeToggle />
       </View>
-      <Text style={styles.homeTitle}>Piedra, papel o tijera</Text>
-      <Text style={styles.homeSubtitle}>Introduce tu nombre para jugar</Text>
-      <TextInput
-        style={styles.nameInput}
-        value={name}
-        onChangeText={setName}
-        placeholder="Tu nombre"
-        placeholderTextColor={theme.textMuted}
-        accessibilityLabel="Nombre del jugador"
-        autoCapitalize="words"
-        returnKeyType="done"
-        onSubmitEditing={handleStart}
-      />
-      {formError !== null && <Text style={styles.formError}>{formError}</Text>}
-      <View style={styles.modeRow}>
-        {MODE_OPTIONS.map((option) => (
-          <Pressable
-            key={option.mode}
-            accessibilityRole="radio"
-            accessibilityState={{ checked: gameMode === option.mode }}
-            accessibilityLabel={`Modo ${option.label}`}
-            onPress={() => setGameMode(option.mode)}
-            style={[styles.modeOption, gameMode === option.mode && styles.modeOptionChecked]}
-          >
-            <Text style={styles.modeOptionLabel}>{option.label}</Text>
-          </Pressable>
-        ))}
-      </View>
-      <Pressable
-        style={styles.startButton}
-        accessibilityRole="button"
-        accessibilityLabel="Empezar a jugar"
-        onPress={handleStart}
-      >
-        <Text style={styles.startButtonLabel}>Jugar</Text>
-      </Pressable>
-      <Link href="/ranking" style={styles.rankingLink}>
-        Ver ranking
-      </Link>
+      <MainCard>
+        <Text style={styles.homeTitle}>Piedra, papel o tijera</Text>
+        <Text style={styles.homeSubtitle}>Introduce tu nombre para jugar</Text>
+        <TextInput
+          style={styles.nameInput}
+          value={name}
+          onChangeText={setName}
+          placeholder="Tu nombre"
+          placeholderTextColor={theme.textMuted}
+          accessibilityLabel="Nombre del jugador"
+          autoCapitalize="words"
+          returnKeyType="done"
+          onSubmitEditing={handleStart}
+        />
+        {formError !== null && <Text style={styles.formError}>{formError}</Text>}
+        <View style={styles.modeRow}>
+          {MODE_OPTIONS.map((option) => (
+            <Pressable
+              key={option.mode}
+              accessibilityRole="radio"
+              accessibilityState={{ checked: gameMode === option.mode }}
+              accessibilityLabel={`Modo ${option.label}`}
+              onPress={() => setGameMode(option.mode)}
+              style={[styles.modeOption, gameMode === option.mode && styles.modeOptionChecked]}
+            >
+              <Text style={styles.modeOptionLabel}>{option.label}</Text>
+            </Pressable>
+          ))}
+        </View>
+        <Pressable
+          style={styles.startButton}
+          accessibilityRole="button"
+          accessibilityLabel="Empezar a jugar"
+          onPress={handleStart}
+        >
+          <Text style={styles.startButtonLabel}>Jugar</Text>
+        </Pressable>
+        <Link href="/ranking" style={styles.rankingLink}>
+          Ver ranking
+        </Link>
+      </MainCard>
     </View>
   );
 }

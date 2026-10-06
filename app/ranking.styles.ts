@@ -1,4 +1,5 @@
 import { StyleSheet } from 'react-native';
+import { WEB_CONTENT_MAX_WIDTH } from '../constants/layout.constants';
 import type { ThemeColors } from '../types/types';
 
 export const getStyles = (theme: ThemeColors) => {
@@ -12,6 +13,9 @@ export const getStyles = (theme: ThemeColors) => {
     },
     topBar: {
       width: '100%',
+      maxWidth: WEB_CONTENT_MAX_WIDTH,
+      alignSelf: 'center',
+      marginHorizontal: 'auto',
       flexDirection: 'row',
       justifyContent: 'flex-end',
     },
@@ -22,6 +26,9 @@ export const getStyles = (theme: ThemeColors) => {
     },
     rankingList: {
       width: '100%',
+      maxWidth: WEB_CONTENT_MAX_WIDTH,
+      alignSelf: 'center',
+      marginHorizontal: 'auto',
       gap: 8,
     },
     rankingEmpty: {

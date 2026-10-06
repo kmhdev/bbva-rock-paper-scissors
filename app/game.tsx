@@ -2,6 +2,7 @@ import { Redirect, useRouter } from 'expo-router';
 import { useEffect, useRef } from 'react';
 import { Pressable, Text, View } from 'react-native';
 import ChoiceButton from '../components/ChoiceButton/ChoiceButton';
+import MainCard from '../components/MainCard/MainCard';
 import RoundResult from '../components/RoundResult/RoundResult';
 import ScoreBoard from '../components/ScoreBoard/ScoreBoard';
 import ThemeToggle from '../components/ThemeToggle/ThemeToggle';
@@ -88,44 +89,46 @@ export default function GameScreen() {
       <View style={styles.topBar}>
         <ThemeToggle />
       </View>
-      <ScoreBoard playerName={playerName} score={score} />
-      <View style={choices.length > 3 ? styles.choicesRowWrapped : styles.choicesRow}>
-        {choices.map((choice) => (
-          <ChoiceButton
-            key={choice}
-            choice={choice}
-            selected={playerPick === choice}
-            disabled={machineThinking}
-            onPress={handlePick}
-          />
-        ))}
-      </View>
-      <RoundResult
-        playerPick={playerPick}
-        machinePick={machinePick}
-        thinking={machineThinking}
-        outcome={outcome}
-      />
-      <View style={styles.smartRow}>
-        <Text style={styles.smartLabel}>Máquina inteligente</Text>
+      <MainCard>
+        <ScoreBoard playerName={playerName} score={score} />
+        <View style={choices.length > 3 ? styles.choicesRowWrapped : styles.choicesRow}>
+          {choices.map((choice) => (
+            <ChoiceButton
+              key={choice}
+              choice={choice}
+              selected={playerPick === choice}
+              disabled={machineThinking}
+              onPress={handlePick}
+            />
+          ))}
+        </View>
+        <RoundResult
+          playerPick={playerPick}
+          machinePick={machinePick}
+          thinking={machineThinking}
+          outcome={outcome}
+        />
+        <View style={styles.smartRow}>
+          <Text style={styles.smartLabel}>Máquina inteligente</Text>
+          <Pressable
+            accessibilityRole="switch"
+            accessibilityLabel="Activar máquina inteligente"
+            accessibilityState={{ checked: smartMachine }}
+            onPress={() => useGameStore.getState().setSmartMachine(!smartMachine)}
+            style={[styles.smartToggle, smartMachine && styles.smartToggleOn]}
+          >
+            <Text style={styles.smartToggleLabel}>{smartMachine ? 'ON' : 'OFF'}</Text>
+          </Pressable>
+        </View>
         <Pressable
-          accessibilityRole="switch"
-          accessibilityLabel="Activar máquina inteligente"
-          accessibilityState={{ checked: smartMachine }}
-          onPress={() => useGameStore.getState().setSmartMachine(!smartMachine)}
-          style={[styles.smartToggle, smartMachine && styles.smartToggleOn]}
+          style={styles.exitButton}
+          accessibilityRole="button"
+          accessibilityLabel="Salir del juego"
+          onPress={handleExit}
         >
-          <Text style={styles.smartToggleLabel}>{smartMachine ? 'ON' : 'OFF'}</Text>
+          <Text style={styles.exitButtonLabel}>Salir</Text>
         </Pressable>
-      </View>
-      <Pressable
-        style={styles.exitButton}
-        accessibilityRole="button"
-        accessibilityLabel="Salir del juego"
-        onPress={handleExit}
-      >
-        <Text style={styles.exitButtonLabel}>Salir</Text>
-      </Pressable>
+      </MainCard>
     </View>
   );
 }

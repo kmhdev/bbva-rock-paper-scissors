@@ -20,9 +20,24 @@ export interface ThemeColors {
   danger: string;
   success: string;
   border: string;
+  secondary?: string;
+  textSecondary?: string;
+  scorePanel?: string;
+  successBg?: string;
+  errorBg?: string;
 }
 
 export interface PlayerScore {
   username: string;
   score: number;
+}
+
+export interface ToolsButtonProps {
+  onPress: () => void;
+  visible?: boolean;
+}
+
+export interface SidebarProps {
+  open: boolean;
+  onClose: () => void;
 }
