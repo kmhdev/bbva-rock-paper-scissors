@@ -26,6 +26,11 @@ export const getStyles = (theme: ThemeColors) => {
       fontWeight: '800',
       textAlign: 'center',
     },
+    heroLogo: {
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: 'transparent',
+    },
     homeSubtitle: {
       color: theme.textMuted,
       fontSize: 16,

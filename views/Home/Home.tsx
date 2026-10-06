@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Text, TextInput, View } from 'react-native';
 import AppButton from '../../components/AppButton/AppButton';
+import AppLogo from '../../components/AppLogo/AppLogo';
 import SegmentedToggle from '../../components/SegmentedToggle/SegmentedToggle';
 import MainCard from '../../components/MainCard/MainCard';
 import ThemeToggle from '../../components/ThemeToggle/ThemeToggle';
@@ -57,6 +58,9 @@ export default function HomeView() {
           <ThemeToggle />
         </View>
       )}
+      <View style={styles.heroLogo}>
+        <AppLogo size={112} />
+      </View>
       <MainCard>
         <Text style={styles.homeTitle}>Piedra, papel o tijera</Text>
         <Text style={styles.homeSubtitle}>Introduce tu nombre para jugar</Text>

@@ -78,3 +78,9 @@ export interface NavigationContextValue {
   screen: Screen;
   setScreen: (screen: Screen) => void;
 }
+
+export interface AppLogoProps {
+  size?: number;
+  accessibilityLabel?: string;
+  testID?: string;
+}
