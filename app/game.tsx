@@ -8,6 +8,7 @@ import ScoreBoard from '../components/ScoreBoard/ScoreBoard';
 import ThemeToggle from '../components/ThemeToggle/ThemeToggle';
 import { MACHINE_REVEAL_DELAY_MS } from '../constants/game.constants';
 import { useTheme } from '../context/ThemeContext';
+import { useIsMobilePlatform } from '../hooks/useIsMobilePlatform';
 import { getChoicesForMode } from '../services/gameLogicService';
 import { randomMachineStrategy, smartMachineStrategy } from '../services/machineStrategies';
 import { pushRemoteScore } from '../services/supabaseScoreStorage';
@@ -24,6 +25,7 @@ import { getStyles } from './game.styles';
 export default function GameScreen() {
   const router = useRouter();
   const { theme } = useTheme();
+  const isMobile = useIsMobilePlatform();
   const styles = getStyles(theme);
   const playerName = useGameStore((state) => state.playerName);
   const score = useGameStore((state) => state.score);
@@ -86,9 +88,11 @@ export default function GameScreen() {
 
   return (
     <View style={styles.gameScreen}>
-      <View style={styles.topBar}>
-        <ThemeToggle />
-      </View>
+      {!isMobile && (
+        <View style={styles.topBar}>
+          <ThemeToggle />
+        </View>
+      )}
       <MainCard>
         <ScoreBoard playerName={playerName} score={score} />
         <View style={choices.length > 3 ? styles.choicesRowWrapped : styles.choicesRow}>

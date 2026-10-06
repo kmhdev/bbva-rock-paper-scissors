@@ -21,7 +21,7 @@ test('registers, plays a round and exits', async ({ page }) => {
 test('ranking loads from home', async ({ page }) => {
   await page.goto('/');
   await page.getByText('Ver ranking').click();
-  await expect(page.getByText('Ranking', { exact: true })).toBeVisible();
+  await expect(page.getByTestId('ranking-title')).toBeVisible();
 });
 
 test('theme toggle switches theme and persists across reloads', async ({ page }) => {

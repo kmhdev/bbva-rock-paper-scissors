@@ -4,6 +4,7 @@ import { Pressable, Text, TextInput, View } from 'react-native';
 import MainCard from '../components/MainCard/MainCard';
 import ThemeToggle from '../components/ThemeToggle/ThemeToggle';
 import { useTheme } from '../context/ThemeContext';
+import { useIsMobilePlatform } from '../hooks/useIsMobilePlatform';
 import { useGameStore } from '../store/appStore';
 import type { GameMode } from '../types/types';
 import { getStyles } from './index.styles';
@@ -17,6 +18,7 @@ const MODE_OPTIONS: Array<{ mode: GameMode; label: string }> = [
 export default function HomeScreen() {
   const router = useRouter();
   const { theme } = useTheme();
+  const isMobile = useIsMobilePlatform();
   const styles = getStyles(theme);
   const playerName = useGameStore((state) => state.playerName);
   const gameMode = useGameStore((state) => state.gameMode);
@@ -43,9 +45,11 @@ export default function HomeScreen() {
 
   return (
     <View style={styles.homeScreen}>
-      <View style={styles.topBar}>
-        <ThemeToggle />
-      </View>
+      {!isMobile && (
+        <View style={styles.topBar}>
+          <ThemeToggle />
+        </View>
+      )}
       <MainCard>
         <Text style={styles.homeTitle}>Piedra, papel o tijera</Text>
         <Text style={styles.homeSubtitle}>Introduce tu nombre para jugar</Text>

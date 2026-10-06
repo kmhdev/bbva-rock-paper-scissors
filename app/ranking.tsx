@@ -5,6 +5,7 @@ import MainCard from '../components/MainCard/MainCard';
 import RankingRow from '../components/RankingRow/RankingRow';
 import ThemeToggle from '../components/ThemeToggle/ThemeToggle';
 import { useTheme } from '../context/ThemeContext';
+import { useIsMobilePlatform } from '../hooks/useIsMobilePlatform';
 import { fetchRemoteScores, mergeScores } from '../services/supabaseScoreStorage';
 import { getScoreService, useGameStore } from '../store/appStore';
 import type { PlayerScore } from '../types/types';
@@ -13,6 +14,7 @@ import { getStyles } from './ranking.styles';
 /** Bonus ranking view: best score per registered player (local + online). */
 export default function RankingScreen() {
   const { theme } = useTheme();
+  const isMobile = useIsMobilePlatform();
   const styles = getStyles(theme);
   const playerName = useGameStore((state) => state.playerName);
   const [scores, setScores] = useState<PlayerScore[]>([]);
@@ -36,11 +38,15 @@ export default function RankingScreen() {
 
   return (
     <View style={styles.rankingScreen}>
-      <View style={styles.topBar}>
-        <ThemeToggle />
-      </View>
+      {!isMobile && (
+        <View style={styles.topBar}>
+          <ThemeToggle />
+        </View>
+      )}
       <MainCard>
-        <Text style={styles.rankingTitle}>Ranking</Text>
+        <Text testID="ranking-title" style={styles.rankingTitle}>
+          Ranking
+        </Text>
         {loading ? (
           <Text style={styles.rankingLoading}>Cargando puntuaciones…</Text>
         ) : scores.length === 0 ? (

@@ -37,7 +37,12 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
           <Pressable style={styles.overlayPressable} onPress={handleOverlayClose} />
         </Animated.View>
       )}
-      <Animated.View style={[styles.sidebar, { left: animatedLeft }]} {...panResponder.panHandlers}>
+      <Animated.View
+        aria-hidden={!open}
+        testID="sidebar-panel"
+        style={[styles.sidebar, { left: animatedLeft }]}
+        {...panResponder.panHandlers}
+      >
         <SafeAreaView style={styles.safeArea} edges={['top', 'left']}>
           <View style={styles.content}>
             <View style={styles.avatarWrapper}>
