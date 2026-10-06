@@ -8,6 +8,7 @@ Despliegue web (Vercel): _pendiente — el dueño del repo lo configura en Verce
 Stack: **Expo SDK 57 + React Native + TypeScript estricto + expo-router + Zustand**,
 misma arquitectura que `quiniela-native` (proyecto Expo único para web PWA + iOS/Android,
 estilos `StyleSheet` con `ThemeContext`, mobile-first). Package manager: **npm**.
+Ver [Stack elegido y por qué](#stack-elegido-y-por-qué).
 
 ## Requisitos
 
@@ -82,11 +83,43 @@ inteligente se activan sin tocar la vista, solo cambiando el servicio/modo.
 
 ## Bonus points implementados (los 4)
 
-1. **Ranking** (`/ranking`): mejor puntuación por jugador, local + Supabase.
-2. **Lagarto-Spock**: selector de modo en home; misma interfaz de reglas.
-3. **Máquina inteligente**: `SmartMachineStrategy` contrataca tu jugada más
-   frecuente (toggle en la vista game).
-4. **Vibración al perder**: `navigator.vibrate` en web, `expo-haptics` en nativo.
+### 1. Ranking (`/ranking`)
+
+Vista de ranking con la mejor puntuación de cada jugador registrado, ordenada
+de mayor a menor (desempate alfabético). Componente reutilizable `RankingRow`
+(posición + nombre + puntos, con singular `1 pto` / plural `5 pts`).
+
+- Fuente local (siempre disponible offline): `ScoreService.getAllScores()`.
+- Fuente online (si Supabase está configurado): `fetchRemoteScores()`.
+- Fusión con `mergeScores(local, remote)`: se queda con la **mejor** marca por
+  jugador (clave insensible a mayúsculas) y reordena.
+- Al ganar una ronda, la vista game sube tu marca con
+  `pushRemoteScore(username, score)`: hace `upsert` solo si superas tu mejor
+  marca anterior; sin configuración de Supabase es un no-op (la app sigue
+  funcionando 100% offline). Ver [Supabase](#supabase-ranking-online-opcional).
+
+### 2. Lagarto-Spock (modo extendido)
+
+Selector de modo en home (`Clásico (3)` / `Lagarto-Spock (5)`). Las reglas viven
+en una única tabla `BEATS` (`constants/game.constants.ts`) que ya contiene las
+10 relaciones del RPSLS; `decideWinner(player, machine)` no cambia entre modos,
+solo el conjunto de opciones (`getChoicesForMode(mode)`). Siguiendo la pauta del
+reto, el servicio B expone la misma firma para ambas lógicas, así que la vista
+`game` no se toca al cambiar de modo: solo renderiza más `ChoiceButton`.
+
+### 3. Máquina inteligente
+
+Ver [Cómo funciona la máquina inteligente](#cómo-funciona-la-máquina-inteligente).
+
+### 4. Vibración al perder
+
+`utils/vibration.ts` → `vibrateOnLoss()`:
+
+- **Web PWA**: `navigator.vibrate(200)` (`LOSE_VIBRATION_MS`). Solo Android/Chrome
+  lo soportan; iOS lo ignora de forma silenciosa, por eso va con feature-detect.
+- **Nativo**: `expo-haptics.notificationAsync(Error)`, importado de forma
+  perezosa para no acoplar los tests unitarios a módulos nativos.
+- La vista `game` la dispara solo cuando el resultado consolidado es `lose`.
 
 ## Supabase (ranking online, opcional)
 
@@ -107,11 +140,70 @@ Sin configurar, la app funciona 100% offline. Para activar el ranking online:
   (renderizan semántica web en RN-web). Sin `div`: todo son `View/Text` con
   estilos por componente (`*.styles.ts`, convención BEM-like por nombres).
 
-## Decisiones técnicas
+## Cómo funciona la máquina inteligente
 
-- Proyecto Expo único (no monorepo): igual que `quiniela-native`, sirve a
-  web + nativo con el mismo código.
-- Doble runner de tests: **vitest** para lógica pura (rápido, cobertura V8) y
-  **jest + jest-expo** para vistas/componentes RN (el entry de RN usa sintaxis
-  Flow que Vite no parsea). RNTL v14: `render`/`fireEvent` asíncronos.
-- E2E con Playwright contra `dist/` servido en estático.
+Hay dos estrategias intercambiables con la misma interfaz (`services/machineService.ts`):
+
+```ts
+interface MachineContext {
+  playerHistory: readonly Choice[];   // tus jugadas anteriores
+  machineHistory: readonly Choice[];  // jugadas anteriores de la máquina
+  availableChoices: readonly Choice[]; // 3 en clásico, 5 en extendido
+}
+interface MachineStrategy {
+  readonly name: string;
+  pickMove(context: MachineContext): Choice;
+}
+```
+
+- **`RandomMachineStrategy`** (por defecto): elige al azar pero **nunca repite
+  la jugada anterior de la máquina** si hay alternativas (lo exige el enunciado:
+  _"la selección de la máquina deberá ser distinta en cada jugada"_).
+- **`SmartMachineStrategy`** (bonus, conmutable con el switch
+  _"Máquina inteligente"_ en la vista game): estrategia de **frecuencias con
+  contraataque**:
+
+  1. Cuenta tus jugadas (`mostFrequentChoice`) y detecta tu opción más repetida
+     (en empate gana la primera vista, determinista).
+  2. Calcula qué opciones la vencen (`getCountersFor`, inversa derivada de la
+     tabla `BEATS`, sin duplicar reglas) y elige una al azar entre ellas,
+     filtrada al modo activo.
+  3. Si no hay historial todavía, si los contadores no están en el modo activo
+     o si el único contraataque repetiría la jugada anterior, **degrada a la
+     estrategia aleatoria** (nunca rompe la regla de no-repetición).
+
+  Ejemplo: si juegas piedra el 80% de las veces, la máquina responderá con papel
+  o Spock, que son exactamente las dos opciones que vencen a piedra.
+
+La vista `game` no conoce los detalles: elige estrategia según
+`store.smartMachine` y le pasa el contexto. Los singletons compartidos viven en
+`services/machineStrategies.ts` para que los tests puedan sustituirlos por una
+máquina determinista.
+
+## Stack elegido y por qué
+
+Se pidió explícitamente **React Native + TypeScript para webapp y móvil**,
+mobile-first con posibilidad nativa, **Zustand** y **ESLint**. Decisiones:
+
+- **Proyecto Expo único (no monorepo)**: igual que `quiniela-native`. Un solo
+  código sirve a web PWA (vía `react-native-web`), iOS y Android. Un monorepo
+  `apps/web + apps/mobile` duplicaría las vistas para este reto sin aportar nada:
+  las vistas ya son compartidas al 100%.
+- **Expo SDK 57 + expo-router**: rutas por ficheros (`/`, `/game`, `/ranking`,
+  `+not-found` → `/`), cumpliendo el requisito de _"cualquier ruta inexistente
+  redirige a home"_ sin lógica extra.
+- **Zustand con `persist`**: estado de sesión (jugador, modo, racha) + estado de
+  la ronda. La puntuación autoritativa vive en el servicio A (`ScoreService`
+  sobre AsyncStorage, que en web es localStorage): una sola fuente de verdad,
+  testeable con backend en memoria.
+- **Supabase solo para el ranking online**: el reto exige funcionar offline y
+  sin backend, así que Supabase es un espejo opcional de mejores marcas, nunca
+  un requisito. Sin claves, todo sigue funcionando en local.
+- **Doble runner de tests**: **vitest** para lógica pura (rápido, cobertura V8)
+  y **jest + jest-expo** para vistas/componentes RN (el entry de RN usa sintaxis
+  Flow que Vite no parsea). RNTL v14: `render`/`fireEvent` asíncronos. Los tests
+  de vistas viven en `tests/` y no en `app/`: expo-router empaquetaría
+  `app/*.test.tsx` como rutas y rompería el bundle web (lo detectó el e2e).
+- **E2E con Playwright** contra `dist/` servido en estático.
+- **ESLint 9** (pinado, porque `jsx-a11y@6` aún no soporta ESLint 10) con
+  `typescript + react + hooks + jsx-a11y`, y Prettier idéntico a `quiniela-native`.
