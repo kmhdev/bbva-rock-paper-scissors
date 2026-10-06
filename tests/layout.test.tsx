@@ -3,7 +3,7 @@ import { render } from '@testing-library/react-native';
 import type { ReactNode } from 'react';
 import type { StyleProp, ViewStyle } from 'react-native';
 import { registerServiceWorker } from '../utils/pwa';
-import RootLayout from './_layout';
+import RootLayout from '../app/_layout';
 
 jest.mock('expo-router', () => {
   const mockReact = jest.requireActual('react') as typeof import('react');

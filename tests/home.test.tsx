@@ -3,7 +3,7 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react-nativ
 import type { ReactNode } from 'react';
 import { ThemeProvider } from '../context/ThemeContext';
 import { getScoreService, useGameStore } from '../store/appStore';
-import HomeScreen from './index';
+import HomeScreen from '../app/index';
 
 const mockReplace = jest.fn();
 

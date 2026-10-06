@@ -6,7 +6,7 @@ import { ThemeProvider } from '../context/ThemeContext';
 import type { Choice } from '../types/types';
 import { useGameStore } from '../store/appStore';
 import { vibrateOnLoss } from '../utils/vibration';
-import GameScreen from './game';
+import GameScreen from '../app/game';
 
 const mockReplace = jest.fn();
 let mockRandomPick: Choice = 'scissors';

@@ -4,7 +4,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { ReactNode } from 'react';
 import { ThemeProvider } from '../context/ThemeContext';
 import { getScoreService, useGameStore } from '../store/appStore';
-import RankingScreen from './ranking';
+import RankingScreen from '../app/ranking';
 
 jest.mock('expo-router', () => {
   const mockReact = jest.requireActual('react') as typeof import('react');
