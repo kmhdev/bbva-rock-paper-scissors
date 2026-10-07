@@ -86,6 +86,8 @@ export function createGameStore(scoreService: ScoreService, storage?: StateStora
       let score = get().score;
       if (outcome === 'win' && playerName !== null) {
         score = await scoreService.addWin(playerName);
+      } else if (outcome === 'lose' && playerName !== null) {
+        score = await scoreService.addLoss(playerName);
       }
       set({
         machinePick,

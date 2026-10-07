@@ -41,85 +41,40 @@ export const getSidebarStyles = (theme: ThemeColors) =>
     },
     content: {
       flex: 1,
-      paddingTop: 32,
+      paddingTop: 48,
       paddingHorizontal: 28,
       backgroundColor: 'transparent',
       justifyContent: 'flex-start',
     },
-    avatarWrapper: {
-      alignItems: 'center',
-      marginBottom: 24,
-    },
-    avatar: {
-      width: 64,
-      height: 64,
-      borderRadius: 32,
-      backgroundColor: theme.border,
-      marginBottom: 8,
-    },
-    username: {
-      fontSize: 20,
-      fontWeight: 'bold',
-      color: theme.text,
-      fontFamily: 'monospace',
-      marginBottom: 2,
-    },
-    userHandle: {
-      fontSize: 14,
-      color: theme.text,
-      opacity: 0.7,
-      fontFamily: 'monospace',
-      marginBottom: 8,
-    },
     menu: {
-      marginTop: 8,
+      marginTop: 24,
       marginBottom: 24,
     },
     menuItem: {
       flexDirection: 'row',
       alignItems: 'center',
-      paddingVertical: 14,
+      paddingVertical: 22,
     },
     menuIcon: {
-      marginRight: 18,
+      marginRight: 20,
       color: theme.text,
       opacity: 0.85,
     },
     liveMenuIcon: {
-      marginRight: 18,
+      marginRight: 20,
       color: theme.accent,
     },
     menuText: {
-      fontSize: 18,
+      fontSize: 22,
       color: theme.text,
       fontFamily: 'monospace',
       fontWeight: '500',
     },
     liveMenuText: {
-      fontSize: 18,
+      fontSize: 22,
       color: theme.accent,
       fontFamily: 'monospace',
       fontWeight: '700',
-    },
-    bottomArea: {
-      position: 'absolute',
-      left: 24,
-      bottom: 32,
-      flexDirection: 'row',
-      alignItems: 'center',
-    },
-    themeBtnMinimal: {
-      padding: 4,
-      borderRadius: 16,
-      backgroundColor: 'transparent',
-      minWidth: 36,
-      minHeight: 36,
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
-    themeRow: {
-      flexDirection: 'row',
-      alignItems: 'center',
     },
   });
 
@@ -159,6 +114,10 @@ export const getOverlayAnimatedStyle = (overlayAnim: Animated.Value) => ({
     inputRange: [0, 1],
     outputRange: [0, OVERLAY_MAX_OPACITY],
   }),
+});
+
+export const getThemeFadeStyle = (themeFade: Animated.Value) => ({
+  opacity: themeFade,
 });
 
 export const getSidebarPanResponder = (

@@ -1,4 +1,4 @@
-import { STORAGE_KEY_SCORES } from '../constants/game.constants';
+import { POINTS_PER_LOSS, POINTS_PER_WIN, STORAGE_KEY_SCORES } from '../constants/game.constants';
 import type { PlayerScore } from '../types/types';
 
 /** Minimal async key-value backend so the service is testable without native modules. */
@@ -49,7 +49,17 @@ export class ScoreService {
 
   /** Adds one point to the player's score and returns the new total. */
   async addWin(username: string): Promise<number> {
-    const next = (await this.getScore(username)) + 1;
+    const next = (await this.getScore(username)) + POINTS_PER_WIN;
+    await this.saveScore(username, next);
+    return next;
+  }
+
+  /**
+   * Subtracts one point from the player's score and returns the new total.
+   * The score may go negative; there is no floor.
+   */
+  async addLoss(username: string): Promise<number> {
+    const next = (await this.getScore(username)) - POINTS_PER_LOSS;
     await this.saveScore(username, next);
     return next;
   }

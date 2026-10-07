@@ -5,10 +5,9 @@ import { useNavigation } from '../../context/NavigationContext';
 import type { Screen } from '../../types/types';
 import { useTheme } from '../../context/ThemeContext';
 import { useIsMobilePlatform } from '../../hooks/useIsMobilePlatform';
-import { useGameStore } from '../../store/appStore';
 import type { SidebarProps } from '../../types/types';
 import { useSidebarLogic, useThemeFade } from './Sidebar.helpers';
-import { getOverlayAnimatedStyle } from './Sidebar.styles';
+import { getOverlayAnimatedStyle, getThemeFadeStyle } from './Sidebar.styles';
 
 const MENU_ROUTES = [
   { screen: 'home' as Screen, label: 'Inicio', icon: 'home-outline' },
@@ -20,15 +19,13 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
   const { theme, toggleTheme } = useTheme();
   const isMobile = useIsMobilePlatform();
   const { screen, setScreen } = useNavigation();
-  const playerName = useGameStore((state) => state.playerName);
   const { panResponder, styles, animatedLeft, showOverlay, overlayAnim, handleOverlayClose } =
     useSidebarLogic({ open, onClose, theme });
   const { themeFade, handleThemeChange } = useThemeFade(toggleTheme);
 
   if (!isMobile) return null;
 
-  const displayName = playerName ?? 'Invitado';
-  const displayHandle = `@${displayName.toLowerCase().replace(/\s+/g, '_')}`;
+  const themeLabel = `Cambiar a tema ${theme.name === 'dark' ? 'claro' : 'oscuro'}`;
 
   return (
     <>
@@ -45,11 +42,6 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
       >
         <SafeAreaView style={styles.safeArea} edges={['top', 'left']}>
           <View style={styles.content}>
-            <View style={styles.avatarWrapper}>
-              <View style={styles.avatar} />
-              <Text style={styles.username}>{displayName}</Text>
-              <Text style={styles.userHandle}>{displayHandle}</Text>
-            </View>
             <View style={styles.menu}>
               {MENU_ROUTES.map((item) => {
                 const isActive = screen === item.screen;
@@ -66,7 +58,7 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
                   >
                     <Ionicons
                       name={item.icon}
-                      size={24}
+                      size={30}
                       style={isActive ? styles.liveMenuIcon : styles.menuIcon}
                     />
                     <Text style={isActive ? styles.liveMenuText : styles.menuText}>
@@ -75,20 +67,19 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
                   </Pressable>
                 );
               })}
-            </View>
-            <View style={styles.bottomArea}>
-              <Animated.View style={[styles.themeRow, { opacity: themeFade }]}>
+              <Animated.View style={getThemeFadeStyle(themeFade)}>
                 <Pressable
-                  style={styles.themeBtnMinimal}
+                  style={styles.menuItem}
                   accessibilityRole="button"
-                  accessibilityLabel="Cambiar tema"
+                  accessibilityLabel={themeLabel}
                   onPress={handleThemeChange}
                 >
                   <Ionicons
                     name={theme.name === 'dark' ? 'sunny-outline' : 'moon-outline'}
-                    size={28}
-                    color={theme.accent}
+                    size={30}
+                    style={styles.menuIcon}
                   />
+                  <Text style={styles.menuText}>{themeLabel}</Text>
                 </Pressable>
               </Animated.View>
             </View>

@@ -36,6 +36,12 @@ describe('ScoreService', () => {
     await expect(service.addWin('ana')).resolves.toBe(2);
   });
 
+  it('addLoss decrements by one and allows negative scores', async () => {
+    const service = new ScoreService(createMemoryStorage());
+    await expect(service.addLoss('ana')).resolves.toBe(-1);
+    await expect(service.addLoss('ana')).resolves.toBe(-2);
+  });
+
   it('getAllScores returns every player ordered by score desc', async () => {
     const service = new ScoreService(createMemoryStorage());
     await service.saveScore('bob', 2);

@@ -13,7 +13,7 @@ interface RoundResultProps {
 
 const OUTCOME_MESSAGE: Record<RoundOutcome, string> = {
   win: '¡Has ganado! +1 punto',
-  lose: 'Has perdido',
+  lose: 'Has perdido -1 punto',
   draw: 'Empate',
 };
 

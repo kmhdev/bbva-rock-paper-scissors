@@ -39,7 +39,7 @@ describe('RoundResult', () => {
         <RoundResult playerPick="rock" machinePick="paper" thinking={false} outcome="lose" />
       </ThemeProvider>,
     );
-    expect(screen.getByText('Has perdido')).toBeTruthy();
+    expect(screen.getByText('Has perdido -1 punto')).toBeTruthy();
   });
 
   it('shows a draw message', async () => {

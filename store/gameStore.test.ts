@@ -70,13 +70,17 @@ describe('gameStore', () => {
     await expect(scoreService.getScore('ana')).resolves.toBe(1);
   });
 
-  it('resolveRound with a loss keeps the score', async () => {
+  it('resolveRound with a loss subtracts one point and allows negatives', async () => {
     const store = createGameStore(scoreService);
     await store.getState().registerPlayer('ana');
     store.getState().startRound('rock');
     await store.getState().resolveRound('paper');
     expect(store.getState().outcome).toBe('lose');
-    expect(store.getState().score).toBe(0);
+    expect(store.getState().score).toBe(-1);
+    await expect(scoreService.getScore('ana')).resolves.toBe(-1);
+    store.getState().startRound('rock');
+    await store.getState().resolveRound('paper');
+    expect(store.getState().score).toBe(-2);
   });
 
   it('resolveRound with a draw keeps the score', async () => {

@@ -38,6 +38,9 @@ export const MACHINE_REVEAL_DELAY_MS = 1200;
 /** Points awarded per won round. */
 export const POINTS_PER_WIN = 1;
 
+/** Points subtracted per lost round. Score may go negative. */
+export const POINTS_PER_LOSS = 1;
+
 /** AsyncStorage key for local score persistence. */
 export const STORAGE_KEY_SCORES = '@bbva-rps:scores';
 

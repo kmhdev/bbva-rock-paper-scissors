@@ -45,8 +45,8 @@ test('sidebar theme toggle persists', async ({ page }) => {
 
   await page.getByRole('button', { name: 'Abrir menú' }).click();
   const panel = page.getByTestId('sidebar-panel');
-  await expect(panel.getByRole('button', { name: 'Cambiar tema' })).toBeVisible();
-  await panel.getByRole('button', { name: 'Cambiar tema' }).click();
+  await expect(panel.getByRole('button', { name: /Cambiar a tema/ })).toBeVisible();
+  await panel.getByRole('button', { name: /Cambiar a tema/ }).click();
 
   await expect
     .poll(() => page.evaluate(() => localStorage.getItem('@bbva-rps:theme')))

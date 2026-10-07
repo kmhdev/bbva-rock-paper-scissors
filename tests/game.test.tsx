@@ -1,4 +1,5 @@
 import { describe, expect, it, jest, beforeEach, afterEach } from '@jest/globals';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { act, fireEvent, render, screen } from '@testing-library/react-native';
 import type { ReactNode } from 'react';
 import { MACHINE_REVEAL_DELAY_MS } from '../constants/game.constants';
@@ -56,12 +57,13 @@ async function playRound(choiceLabel: string) {
 }
 
 describe('GameScreen', () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     jest.useFakeTimers();
     mockSetScreen.mockClear();
     mockRandomPick = 'scissors';
     mockSmartPick = 'paper';
     (vibrateOnLoss as jest.Mock).mockClear();
+    await AsyncStorage.clear();
   });
 
   afterEach(() => {
@@ -95,13 +97,13 @@ describe('GameScreen', () => {
     expect(vibrateOnLoss).not.toHaveBeenCalled();
   });
 
-  it('resolves a loss, keeps the score and vibrates', async () => {
+  it('resolves a loss, subtracts one point and vibrates', async () => {
     seedSession();
     await renderGame();
     mockRandomPick = 'paper';
     await playRound('Elegir piedra');
-    expect(screen.getByText('Has perdido')).toBeTruthy();
-    expect(screen.getByText('Puntos: 0')).toBeTruthy();
+    expect(screen.getByText('Has perdido -1 punto')).toBeTruthy();
+    expect(screen.getByText('Puntos: -1')).toBeTruthy();
     expect(vibrateOnLoss).toHaveBeenCalledTimes(1);
   });
 
@@ -132,7 +134,7 @@ describe('GameScreen', () => {
     mockSmartPick = 'paper';
     await playRound('Elegir piedra');
     expect(screen.getByText('Máquina: ✋ Papel')).toBeTruthy();
-    expect(screen.getByText('Has perdido')).toBeTruthy();
+    expect(screen.getByText('Has perdido -1 punto')).toBeTruthy();
   });
 
   it('toggles the smart machine switch', async () => {
