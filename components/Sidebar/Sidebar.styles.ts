@@ -67,19 +67,16 @@ export const getSidebarStyles = (theme: ThemeColors) =>
     menuText: {
       fontSize: 22,
       color: theme.text,
-      fontFamily: 'monospace',
       fontWeight: '500',
     },
     liveMenuText: {
       fontSize: 22,
       color: theme.accent,
-      fontFamily: 'monospace',
       fontWeight: '700',
     },
     authError: {
       fontSize: 14,
       color: theme.danger,
-      fontFamily: 'monospace',
       marginBottom: 8,
     },
   });

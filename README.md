@@ -4,7 +4,10 @@ Juego de piedra, papel o tijera contra la máquina. Funciona en el móvil y en e
 
 Reto original: https://bbvaengineering.github.io/challenges/rock-paper-scissors/
 Código: https://github.com/kmhdev/bbva-rock-paper-scissors
-Web: el despliegue en Vercel lo activa el dueño del repo contra `main`.
+
+UI/UX inspirada en proyectos personales, algunos componentes han sido reutilizados.
+Quinielazo: https://quiniela-native.vercel.app/
+SpainXplorer: https://spainxplorer.vercel.app/
 
 ## Cómo se juega
 
@@ -14,7 +17,7 @@ Web: el despliegue en Vercel lo activa el dueño del repo contra `main`.
 
 Si cierras la app y vuelves, sigues donde estabas. Si repites un nombre, retomas sus puntos.
 
-## Extras (no los pedía el enunciado)
+## Extras
 
 - **Ranking**: mejores marcas de cada jugador, en local y (si hay internet) online.
 - **Lagarto-Spock**: modo de 5 opciones desde el inicio.
@@ -23,7 +26,15 @@ Si cierras la app y vuelves, sigues donde estabas. Si repites un nombre, retomas
 - **Tema claro/oscuro**: botón arriba a la derecha, se recuerda.
 - **Instalable y offline**: se puede instalar como app y jugar en modo avión tras la primera visita.
 
-Lo único del bonus que no hay es jugar contra otra persona: siempre juegas contra la máquina.
+## Stack y apuntes técnicos
+
+- **Expo + React Native:** una sola app que funciona en móvil y en navegador, pudiendo incluso desplegar a las tiendas de Apple y Google.
+- **TypeScript:** es JavaScript con etiquetas que dicen qué es cada dato (texto, número, etc.). Como dev lo uso porque me avisa de errores antes de probar la app y me ayuda a cambiar código sin romper nada.
+- **Supabase:** guarda el ranking online cuando hay internet.
+- **En el móvil:** guarda tus puntos aunque no tengas conexión.
+- **Vercel:** donde está publicada y desplegada la app.
+
+La mayor parte del código está documentado con lenguaje natural sencillo. ¡Especialmente las nuevas funcionalidades!
 
 ## Ponerlo en marcha
 
@@ -44,4 +55,10 @@ npm test
 npm run build:web  # genera la carpeta dist/
 ```
 
-El enunciado completo del reto está en [CHALLENGE.md](./CHALLENGE.md).
+## Sección BONUS Fun fact
+
+Hace cuatro años ya hice esta prueba 😄
+Para comparar el progreso dejo los enlaces:
+
+Repo: https://github.com/kmhdev/bbva-rock-paper-scissors-old
+App: https://bbva-rock-paper-scissors-old.vercel.app/
