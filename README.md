@@ -2,12 +2,13 @@
 
 Juego de piedra, papel o tijera contra la máquina. Funciona en el móvil y en el navegador, incluso sin internet.
 
-**Reto original:**https://bbvaengineering.github.io/challenges/rock-paper-scissors/
-**Código:**https://github.com/kmhdev/bbva-rock-paper-scissors
+- **Reto original:**https://bbvaengineering.github.io/challenges/rock-paper-scissors/
+- **Código:**https://github.com/kmhdev/bbva-rock-paper-scissors
 
 UI/UX inspirada en proyectos personales, algunos componentes han sido reutilizados.
-**Quinielazo**: https://quiniela-native.vercel.app/
-**SpainXplorer**: https://spainxplorer.vercel.app/
+
+- **Quinielazo**: https://quiniela-native.vercel.app/
+- **SpainXplorer**: https://spainxplorer.vercel.app/
 
 ## Cómo se juega
 
