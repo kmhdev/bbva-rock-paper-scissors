@@ -4,6 +4,7 @@ Juego de piedra, papel o tijera contra la máquina. Funciona en el móvil y en e
 
 - **Reto original**: https://bbvaengineering.github.io/challenges/rock-paper-scissors/
 - **Código**: https://github.com/kmhdev/bbva-rock-paper-scissors
+- **App desplegada**: https://bbva-rock-paper-scissors.vercel.app/
 
 UI/UX inspirada en proyectos personales, algunos componentes han sido reutilizados.
 
