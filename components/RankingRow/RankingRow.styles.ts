@@ -4,14 +4,17 @@ import type { ThemeColors } from '../../types/types';
 export const getStyles = (theme: ThemeColors) => {
   return StyleSheet.create({
     rankingRow: {
-      flexDirection: 'row',
-      alignItems: 'center',
       width: '100%',
       padding: 12,
       borderRadius: 12,
       backgroundColor: theme.background,
       borderWidth: 1,
       borderColor: theme.border,
+      gap: 8,
+    },
+    mainLine: {
+      flexDirection: 'row',
+      alignItems: 'center',
       gap: 12,
     },
     position: {

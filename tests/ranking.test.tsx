@@ -48,6 +48,17 @@ describe('RankingScreen', () => {
     expect(screen.getByText('Volver')).toBeTruthy();
   });
 
+  it('shows a single best score per player without local/online split', async () => {
+    const scores = getScoreService();
+    await scores.saveScore('Ana', 5);
+    useGameStore.setState({ playerName: 'Ana' });
+    await renderRanking();
+    expect(await screen.findByText('Ana')).toBeTruthy();
+    expect(screen.getByText('5 pts')).toBeTruthy();
+    expect(screen.queryByText('Local')).toBeNull();
+    expect(screen.queryByText('Online')).toBeNull();
+  });
+
   it('goes back to game when a session is active', async () => {
     useGameStore.setState({ playerName: 'Ana' });
     await renderRanking();

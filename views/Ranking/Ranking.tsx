@@ -12,14 +12,14 @@ import { getScoreService, useGameStore } from '../../store/appStore';
 import type { PlayerScore } from '../../types/types';
 import { getStyles } from './Ranking.styles';
 
-/** Bonus ranking view: best score per registered player (local + online). */
+/** Bonus ranking view: mejor marca por jugador, una sola puntuación. */
 export default function RankingView() {
   const { setScreen } = useNavigation();
   const { theme } = useTheme();
   const isMobile = useIsMobilePlatform();
   const styles = getStyles(theme);
   const playerName = useGameStore((state) => state.playerName);
-  const [scores, setScores] = useState<PlayerScore[]>([]);
+  const [rows, setRows] = useState<PlayerScore[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -28,7 +28,7 @@ export default function RankingView() {
       const local = await getScoreService().getAllScores();
       const remote = await fetchRemoteScores();
       if (!cancelled) {
-        setScores(mergeScores(local, remote));
+        setRows(mergeScores(local, remote));
         setLoading(false);
       }
     };
@@ -51,13 +51,13 @@ export default function RankingView() {
         </Text>
         {loading ? (
           <Text style={styles.rankingLoading}>Cargando puntuaciones…</Text>
-        ) : scores.length === 0 ? (
+        ) : rows.length === 0 ? (
           <Text style={styles.rankingEmpty}>
             Aún no hay puntuaciones. ¡Sé la primera persona en jugar!
           </Text>
         ) : (
           <View style={styles.rankingList}>
-            {scores.map((entry, index) => (
+            {rows.map((entry, index) => (
               <RankingRow
                 key={entry.username.toLowerCase()}
                 position={index + 1}

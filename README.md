@@ -88,15 +88,20 @@ inteligente se activan sin tocar la vista, solo cambiando el servicio/modo.
 
 Vista de ranking con la mejor puntuación de cada jugador registrado, ordenada
 de mayor a menor (desempate alfabético). Componente reutilizable `RankingRow`
-(posición + nombre + puntos, con singular `1 pto` / plural `5 pts`).
+(posición + nombre + mejor marca, con singular `1 pto` / plural `5 pts`, más
+columnas `Local` / `Online` por fila para comparar ambos orígenes).
 
 - Fuente local (siempre disponible offline): `ScoreService.getAllScores()`.
 - Fuente online (si Supabase está configurado): `fetchRemoteScores()`.
-- Fusión con `mergeScores(local, remote)`: se queda con la **mejor** marca por
-  jugador (clave insensible a mayúsculas) y reordena.
+- Fusión con `mergeScoresDetailed(local, remote)`: conserva la marca de cada
+  origen por jugador (clave insensible a mayúsculas) más la mejor (`best`),
+  y reordena. `mergeScores` se mantiene por compatibilidad.
+- Login con Google (solo web, portado de espanografia): hook
+  `useSupabaseAuth` + botón `GoogleSignInButton`. Requiere en Supabase
+  Dashboard activar el provider Google y el origen web en Redirect URLs.
 - Al ganar una ronda, la vista game sube tu marca con
-  `pushRemoteScore(username, score)`: hace `upsert` solo si superas tu mejor
-  marca anterior; sin configuración de Supabase es un no-op (la app sigue
+  `pushRemoteScore(username, score, userId?)`: hace `upsert` solo si superas tu mejor
+  marca anterior (vinculando `user_id` si hay sesión); sin configuración de Supabase es un no-op (la app sigue
   funcionando 100% offline). Ver [Supabase](#supabase-ranking-online-opcional).
 
 ### 2. Lagarto-Spock (modo extendido)
@@ -127,10 +132,16 @@ Ver [Cómo funciona la máquina inteligente](#cómo-funciona-la-máquina-intelig
 Sin configurar, la app funciona 100% offline. Para activar el ranking online:
 
 1. Crea un proyecto en https://supabase.com y ejecuta `supabase/schema.sql`
-   (tabla `players` + políticas RLS de lectura/escritura pública).
+   (tabla `players` + políticas RLS de lectura/escritura pública). En
+   proyectos ya creados, ejecuta además
+   `supabase/migrations/20261008_players_user_id.sql` para vincular cada
+   marca al usuario de Google (`user_id`).
 2. Define en Vercel (o `.env` local):
    `EXPO_PUBLIC_SUPABASE_URL` y `EXPO_PUBLIC_SUPABASE_ANON_KEY`.
-3. Al ganar una ronda se sube tu mejor marca (`upsert` solo si la superas);
+3. Para el login con Google (web): en Supabase Dashboard activa
+   Authentication > Providers > Google y añade el origen de la web a
+   Site URL / Redirect URLs.
+4. Al ganar una ronda se sube tu mejor marca (`upsert` solo si la superas);
    el ranking fusiona local + remoto quedándose con la mejor por jugador.
 
 ## Accesibilidad, maquetación y tema

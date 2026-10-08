@@ -45,5 +45,8 @@ coverage/
 test-results/
 playwright-report/
 
-#other
+# other
 todosideas.md
+
+# supabase
+supabase

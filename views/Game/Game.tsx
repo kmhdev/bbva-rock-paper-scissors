@@ -11,9 +11,10 @@ import { MACHINE_REVEAL_DELAY_MS } from '../../constants/game.constants';
 import { useNavigation } from '../../context/NavigationContext';
 import { useTheme } from '../../context/ThemeContext';
 import { useIsMobilePlatform } from '../../hooks/useIsMobilePlatform';
+import { useSupabaseAuth } from '../../hooks/useSupabaseAuth';
 import { getChoicesForMode } from '../../services/gameLogicService';
 import { randomMachineStrategy, smartMachineStrategy } from '../../services/machineStrategies';
-import { pushRemoteScore } from '../../services/supabaseScoreStorage';
+import { submitOnlineScore } from '../../services/supabaseScoreStorage';
 import { useGameStore } from '../../store/appStore';
 import type { Choice, SegmentedToggleOption } from '../../types/types';
 import { vibrateOnLoss } from '../../utils/vibration';
@@ -44,6 +45,7 @@ export default function GameView() {
   const machinePick = useGameStore((state) => state.machinePick);
   const outcome = useGameStore((state) => state.outcome);
   const machineThinking = useGameStore((state) => state.machineThinking);
+  const auth = useSupabaseAuth();
   const revealTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
@@ -87,7 +89,11 @@ export default function GameView() {
           void vibrateOnLoss();
         }
         if (settled.outcome === 'win' && settled.playerName !== null) {
-          void pushRemoteScore(settled.playerName, settled.score);
+          // El servidor resuelve el nombre desde el perfil reclamado;
+          // sin login o sin perfil la marca queda solo en local.
+          if (auth.user !== null && auth.profile !== null && !auth.requiresUsername) {
+            void submitOnlineScore(settled.score);
+          }
         }
       });
     }, MACHINE_REVEAL_DELAY_MS);

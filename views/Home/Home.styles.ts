@@ -53,5 +53,17 @@ export const getStyles = (theme: ThemeColors) => {
       color: theme.danger,
       fontSize: 14,
     },
+    authBox: {
+      width: '100%',
+      maxWidth: WEB_CONTENT_MAX_WIDTH,
+      alignSelf: 'center',
+      marginHorizontal: 'auto',
+      gap: 8,
+    },
+    authError: {
+      color: theme.danger,
+      fontSize: 14,
+      textAlign: 'center',
+    },
   });
 };

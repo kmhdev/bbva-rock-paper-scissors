@@ -2,14 +2,18 @@ import { useEffect, useState } from 'react';
 import { Text, TextInput, View } from 'react-native';
 import AppButton from '../../components/AppButton/AppButton';
 import AppLogo from '../../components/AppLogo/AppLogo';
+import GoogleSignInButton from '../../components/GoogleSignInButton/GoogleSignInButton';
 import SegmentedToggle from '../../components/SegmentedToggle/SegmentedToggle';
+import UsernameSetup from '../../components/UsernameSetup/UsernameSetup';
 import MainCard from '../../components/MainCard/MainCard';
 import ThemeToggle from '../../components/ThemeToggle/ThemeToggle';
 import { useIsMobilePlatform } from '../../hooks/useIsMobilePlatform';
+import { useSupabaseAuth } from '../../hooks/useSupabaseAuth';
 import { useGameStore } from '../../store/appStore';
 import { useNavigation } from '../../context/NavigationContext';
 import { useTheme } from '../../context/ThemeContext';
 import type { GameMode, SegmentedToggleOption } from '../../types/types';
+import { getGoogleNameSuggestion } from './Home.helpers';
 import { getStyles } from './Home.styles';
 
 const MODE_OPTIONS: ReadonlyArray<SegmentedToggleOption<GameMode>> = [
@@ -34,6 +38,7 @@ export default function HomeView() {
   const registerPlayer = useGameStore((state) => state.registerPlayer);
   const [name, setName] = useState('');
   const [formError, setFormError] = useState<string | null>(null);
+  const auth = useSupabaseAuth();
 
   useEffect(() => {
     if (playerName !== null) {
@@ -42,13 +47,72 @@ export default function HomeView() {
   }, [playerName, setScreen]);
 
   const handleStart = async () => {
-    const result = await registerPlayer(name);
+    const effectiveName = auth.profile?.username ?? name;
+    const result = await registerPlayer(effectiveName);
     if (!result.ok) {
       setFormError(result.error ?? 'Nombre no válido.');
       return;
     }
     setFormError(null);
     setScreen('game');
+  };
+
+  if (auth.requiresUsername) {
+    return (
+      <View style={styles.homeScreen}>
+        {!isMobile && (
+          <View style={styles.topBar}>
+            <ThemeToggle />
+          </View>
+        )}
+        <View style={styles.heroLogo}>
+          <AppLogo size={112} />
+        </View>
+        <MainCard>
+          <Text style={styles.homeTitle}>Piedra, papel o tijera</Text>
+          <UsernameSetup
+            error={auth.error}
+            isSaving={auth.isClaimingUsername}
+            initialUsername={getGoogleNameSuggestion(auth.user)}
+            onClaimUsername={auth.claimUsername}
+            onSignOut={auth.signOut}
+          />
+          <AppButton
+            title="Ver ranking"
+            accessibilityLabel="Ver ranking"
+            variant="ghostlight"
+            onPress={() => setScreen('ranking')}
+          />
+        </MainCard>
+      </View>
+    );
+  }
+
+  const claimedUsername = auth.profile?.username ?? null;
+
+  const renderAuthBox = () => {
+    if (!auth.isConfigured || auth.isLoading) {
+      return null;
+    }
+    if (auth.user === null) {
+      return (
+        <View style={styles.authBox}>
+          {auth.error !== '' && <Text style={styles.authError}>{auth.error}</Text>}
+          <GoogleSignInButton onPress={auth.signInWithGoogle} loading={auth.isSigningIn} />
+        </View>
+      );
+    }
+    return (
+      <View style={styles.authBox}>
+        {auth.error !== '' && <Text style={styles.authError}>{auth.error}</Text>}
+        <AppButton
+          title="Cerrar sesión"
+          accessibilityLabel="Cerrar sesión de Google"
+          variant="ghostlight"
+          onPress={auth.signOut}
+        />
+      </View>
+    );
   };
 
   return (
@@ -63,15 +127,20 @@ export default function HomeView() {
       </View>
       <MainCard>
         <Text style={styles.homeTitle}>Piedra, papel o tijera</Text>
-        <Text style={styles.homeSubtitle}>Introduce tu nombre para jugar</Text>
+        <Text style={styles.homeSubtitle}>
+          {claimedUsername !== null
+            ? `Jugarás como ${claimedUsername}`
+            : 'Introduce tu nombre para jugar'}
+        </Text>
         <TextInput
           style={styles.nameInput}
-          value={name}
+          value={claimedUsername ?? name}
           onChangeText={setName}
           placeholder="Tu nombre"
           placeholderTextColor={theme.textMuted}
           accessibilityLabel="Nombre del jugador"
           autoCapitalize="words"
+          editable={claimedUsername === null}
           returnKeyType="done"
           onSubmitEditing={handleStart}
         />
@@ -90,6 +159,7 @@ export default function HomeView() {
           variant="ghostlight"
           onPress={() => setScreen('ranking')}
         />
+        {renderAuthBox()}
       </MainCard>
     </View>
   );
