@@ -4,6 +4,7 @@ import type { User } from '@supabase/supabase-js';
 import type { ReactNode } from 'react';
 import { ThemeProvider } from '../context/ThemeContext';
 import * as authHook from '../hooks/useSupabaseAuth';
+import * as supabaseStorage from '../services/supabaseScoreStorage';
 import { useGameStore } from '../store/appStore';
 import type { SupabaseAuthState } from '../types/types';
 import HomeView from '../views/Home/Home';
@@ -49,6 +50,7 @@ describe('HomeScreen with claimed identity', () => {
     jest.restoreAllMocks();
     useGameStore.setState({
       playerName: null,
+      lastUsername: null,
       score: 0,
       gameMode: 'classic',
       smartMachine: false,
@@ -74,7 +76,27 @@ describe('HomeScreen with claimed identity', () => {
     expect(claimUsername).toHaveBeenCalledWith('AnaOnline');
   });
 
-  it('locks the name input to the claimed username', async () => {
+  it('allows playing with your own claimed online name', async () => {
+    const remoteSpy = jest
+      .spyOn(supabaseStorage, 'fetchRemoteScores')
+      .mockResolvedValue([{ username: 'anaonline', score: 9 }]);
+    try {
+      jest.spyOn(authHook, 'useSupabaseAuth').mockReturnValue(
+        makeAuth({
+          user: mockUser,
+          profile: { user_id: 'user-1', username: 'AnaOnline' },
+        }),
+      );
+      await renderHome();
+      await fireEvent.press(screen.getByLabelText('Empezar a jugar'));
+      await waitFor(() => expect(mockSetScreen).toHaveBeenCalledWith('game'));
+      expect(useGameStore.getState().playerName).toBe('AnaOnline');
+    } finally {
+      remoteSpy.mockRestore();
+    }
+  });
+
+  it('greets with the claimed username instead of showing the name input', async () => {
     jest.spyOn(authHook, 'useSupabaseAuth').mockReturnValue(
       makeAuth({
         user: mockUser,
@@ -82,10 +104,8 @@ describe('HomeScreen with claimed identity', () => {
       }),
     );
     await renderHome();
-    expect(screen.getByText('Jugarás como AnaOnline')).toBeTruthy();
-    const input = screen.getByLabelText('Nombre del jugador');
-    expect(input.props.value).toBe('AnaOnline');
-    expect(input.props.editable).toBe(false);
+    expect(screen.getByText('Hola, AnaOnline 😊')).toBeTruthy();
+    expect(screen.queryByLabelText('Nombre del jugador')).toBeNull();
     await fireEvent.press(screen.getByLabelText('Empezar a jugar'));
     await waitFor(() => expect(mockSetScreen).toHaveBeenCalledWith('game'));
     expect(useGameStore.getState().playerName).toBe('AnaOnline');

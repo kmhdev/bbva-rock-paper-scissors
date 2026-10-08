@@ -120,6 +120,16 @@ describe('gameStore', () => {
     await expect(scoreService.getScore('ana')).resolves.toBe(1);
   });
 
+  it('clearLastUsername forgets the locked name without touching scores', async () => {
+    const store = createGameStore(scoreService);
+    await store.getState().registerPlayer('ana');
+    store.getState().exitToHome();
+    expect(store.getState().lastUsername).toBe('ana');
+    store.getState().clearLastUsername();
+    expect(store.getState().lastUsername).toBeNull();
+    await expect(scoreService.getScore('ana')).resolves.toBe(0);
+  });
+
   it('setGameMode switches mode and clears histories', async () => {
     const store = createGameStore(scoreService);
     await store.getState().registerPlayer('ana');

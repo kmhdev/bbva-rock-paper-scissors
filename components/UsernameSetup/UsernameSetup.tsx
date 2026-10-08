@@ -17,6 +17,12 @@ export default function UsernameSetup({
   initialUsername = '',
   onClaimUsername,
   onSignOut,
+  description = 'Este será tu nombre público en el ranking online.',
+  submitTitle = 'Reservar nombre',
+  submitAccessibilityLabel = 'Reservar nombre',
+  secondaryTitle = 'Cancelar y cerrar sesión',
+  secondaryAccessibilityLabel = 'Cancelar y cerrar sesión',
+  inputAccessibilityLabel = 'Nombre de usuario online',
 }: UsernameSetupProps) {
   const { theme } = useTheme();
   const styles = getStyles(theme);
@@ -46,7 +52,7 @@ export default function UsernameSetup({
   return (
     <View style={styles.card} accessibilityLabel="Elegir nombre de usuario">
       <Text style={styles.title}>¿Cómo te llamamos?</Text>
-      <Text style={styles.description}>Este será tu nombre público en el ranking online.</Text>
+      <Text style={styles.description}>{description}</Text>
       <Text style={styles.fieldLabel}>Nombre de usuario</Text>
       <View style={[styles.inputRow, visibleError !== '' && styles.inputRowError]}>
         <Text style={styles.atSign} aria-hidden>
@@ -58,7 +64,7 @@ export default function UsernameSetup({
           onChangeText={handleChange}
           placeholder="Tu nombre"
           placeholderTextColor={theme.textMuted}
-          accessibilityLabel="Nombre de usuario online"
+          accessibilityLabel={inputAccessibilityLabel}
           autoCapitalize="none"
           autoCorrect={false}
           maxLength={20}
@@ -75,20 +81,22 @@ export default function UsernameSetup({
       )}
       <Text style={styles.lockNote}>¡Elige bien! No podrás cambiarlo después.</Text>
       <AppButton
-        title={isSaving ? 'Guardando…' : 'Reservar nombre'}
-        accessibilityLabel="Reservar nombre"
+        title={isSaving ? 'Guardando…' : submitTitle}
+        accessibilityLabel={submitAccessibilityLabel}
         disabled={isSaving}
         onPress={handleSubmit}
       />
-      <AppButton
-        title="Cancelar y cerrar sesión"
-        accessibilityLabel="Cancelar y cerrar sesión"
-        variant="ghostlight"
-        disabled={isSaving}
-        onPress={() => {
-          void onSignOut();
-        }}
-      />
+      {onSignOut !== undefined && (
+        <AppButton
+          title={secondaryTitle}
+          accessibilityLabel={secondaryAccessibilityLabel}
+          variant="ghostlight"
+          disabled={isSaving}
+          onPress={() => {
+            void onSignOut();
+          }}
+        />
+      )}
     </View>
   );
 }

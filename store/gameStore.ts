@@ -7,6 +7,7 @@ import { ScoreService } from '../services/scoreService';
 
 export interface GameStoreState {
   playerName: string | null;
+  lastUsername: string | null;
   score: number;
   gameMode: GameMode;
   smartMachine: boolean;
@@ -17,6 +18,7 @@ export interface GameStoreState {
   playerHistory: Choice[];
   machineHistory: Choice[];
   registerPlayer: (username: string) => Promise<{ ok: boolean; error?: string }>;
+  clearLastUsername: () => void;
   startRound: (pick: Choice) => void;
   resolveRound: (machinePick: Choice) => Promise<void>;
   resetRound: () => void;
@@ -27,6 +29,7 @@ export interface GameStoreState {
 
 export interface PersistedGameSlice {
   playerName: string | null;
+  lastUsername: string | null;
   gameMode: GameMode;
   smartMachine: boolean;
 }
@@ -51,6 +54,7 @@ export function createGameStore(scoreService: ScoreService, storage?: StateStora
     get: () => GameStoreState,
   ): GameStoreState => ({
     playerName: null,
+    lastUsername: null,
     score: 0,
     gameMode: 'classic',
     smartMachine: false,
@@ -66,6 +70,7 @@ export function createGameStore(scoreService: ScoreService, storage?: StateStora
       const score = await scoreService.getScore(displayName);
       set({
         playerName: displayName,
+        lastUsername: displayName,
         score,
         ...INITIAL_ROUND,
         playerHistory: [],
@@ -73,6 +78,8 @@ export function createGameStore(scoreService: ScoreService, storage?: StateStora
       });
       return { ok: true };
     },
+
+    clearLastUsername: () => set({ lastUsername: null }),
 
     startRound: (pick: Choice) => {
       set({ playerPick: pick, machinePick: null, outcome: null, machineThinking: true });
@@ -102,13 +109,14 @@ export function createGameStore(scoreService: ScoreService, storage?: StateStora
     resetRound: () => set({ ...INITIAL_ROUND }),
 
     exitToHome: () =>
-      set({
+      set((state) => ({
         playerName: null,
+        lastUsername: state.lastUsername ?? state.playerName,
         score: 0,
         ...INITIAL_ROUND,
         playerHistory: [],
         machineHistory: [],
-      }),
+      })),
 
     setGameMode: (mode: GameMode) =>
       set({ gameMode: mode, ...INITIAL_ROUND, playerHistory: [], machineHistory: [] }),
@@ -123,6 +131,7 @@ export function createGameStore(scoreService: ScoreService, storage?: StateStora
         storage: createJSONStorage(() => storage),
         partialize: (state): PersistedGameSlice => ({
           playerName: state.playerName,
+          lastUsername: state.lastUsername,
           gameMode: state.gameMode,
           smartMachine: state.smartMachine,
         }),

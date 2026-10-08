@@ -85,8 +85,14 @@ export interface UsernameSetupProps {
   error: string;
   isSaving: boolean;
   initialUsername?: string;
-  onClaimUsername: (username: string) => Promise<void>;
-  onSignOut: () => Promise<void>;
+  onClaimUsername: (username: string) => Promise<void> | void;
+  onSignOut?: () => Promise<void> | void;
+  description?: string;
+  submitTitle?: string;
+  submitAccessibilityLabel?: string;
+  secondaryTitle?: string;
+  secondaryAccessibilityLabel?: string;
+  inputAccessibilityLabel?: string;
 }
 
 export interface ToolsButtonProps {

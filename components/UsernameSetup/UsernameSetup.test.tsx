@@ -93,4 +93,27 @@ describe('UsernameSetup', () => {
     await fireEvent.press(screen.getByLabelText('Cancelar y cerrar sesión'));
     expect(onSignOut).toHaveBeenCalledTimes(1);
   });
+
+  it('hides the secondary action when reused without sign out (local mode)', async () => {
+    const onClaimUsername = jest.fn<() => Promise<void>>();
+    await render(
+      <ThemeProvider>
+        <UsernameSetup
+          error=""
+          isSaving={false}
+          onClaimUsername={onClaimUsername}
+          description="Este será tu nombre de jugador en este dispositivo."
+          submitTitle="Jugar"
+          submitAccessibilityLabel="Empezar a jugar"
+          inputAccessibilityLabel="Nombre del jugador"
+        />
+      </ThemeProvider>,
+    );
+    expect(screen.getByText('Este será tu nombre de jugador en este dispositivo.')).toBeTruthy();
+    expect(screen.getByLabelText('Empezar a jugar')).toBeTruthy();
+    expect(screen.queryByLabelText('Cancelar y cerrar sesión')).toBeNull();
+    await fireEvent.changeText(screen.getByLabelText('Nombre del jugador'), 'Ana');
+    await fireEvent.press(screen.getByLabelText('Empezar a jugar'));
+    expect(onClaimUsername).toHaveBeenCalledWith('Ana');
+  });
 });

@@ -16,11 +16,6 @@ export const getStyles = (theme: ThemeColors) => {
       borderColor: theme.border,
       gap: 4,
     },
-    playerName: {
-      color: theme.text,
-      fontSize: 20,
-      fontWeight: '700',
-    },
     playerScore: {
       color: theme.textMuted,
       fontSize: 16,

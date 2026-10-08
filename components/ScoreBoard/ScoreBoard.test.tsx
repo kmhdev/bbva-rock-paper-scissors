@@ -4,13 +4,13 @@ import { ThemeProvider } from '../../context/ThemeContext';
 import ScoreBoard from './ScoreBoard';
 
 describe('ScoreBoard', () => {
-  it('shows the player name and points', async () => {
+  it('shows only the points', async () => {
     await render(
       <ThemeProvider>
-        <ScoreBoard playerName="Ana" score={3} />
+        <ScoreBoard score={3} />
       </ThemeProvider>,
     );
-    expect(screen.getByText('Hola, Ana')).toBeTruthy();
     expect(screen.getByText('Puntos: 3')).toBeTruthy();
+    expect(screen.queryByText('Hola, Ana')).toBeNull();
   });
 });

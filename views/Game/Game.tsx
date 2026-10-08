@@ -115,7 +115,7 @@ export default function GameView() {
         </View>
       )}
       <MainCard>
-        <ScoreBoard playerName={playerName} score={score} />
+        <ScoreBoard score={score} />
         <RoundResult
           playerPick={playerPick}
           machinePick={machinePick}

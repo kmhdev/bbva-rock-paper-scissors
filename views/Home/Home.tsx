@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Text, TextInput, View } from 'react-native';
+import { Text, View } from 'react-native';
 import AppButton from '../../components/AppButton/AppButton';
 import AppLogo from '../../components/AppLogo/AppLogo';
 import GoogleSignInButton from '../../components/GoogleSignInButton/GoogleSignInButton';
@@ -13,7 +13,12 @@ import { useGameStore } from '../../store/appStore';
 import { useNavigation } from '../../context/NavigationContext';
 import { useTheme } from '../../context/ThemeContext';
 import type { GameMode, SegmentedToggleOption } from '../../types/types';
-import { getGoogleNameSuggestion } from './Home.helpers';
+import { fetchRemoteScores } from '../../services/supabaseScoreStorage';
+import {
+  getGoogleNameSuggestion,
+  isUsernameTakenOnline,
+  LOCAL_NAME_TAKEN_ONLINE_ERROR,
+} from './Home.helpers';
 import { getStyles } from './Home.styles';
 
 const MODE_OPTIONS: ReadonlyArray<SegmentedToggleOption<GameMode>> = [
@@ -33,11 +38,13 @@ export default function HomeView() {
   const isMobile = useIsMobilePlatform();
   const styles = getStyles(theme);
   const playerName = useGameStore((state) => state.playerName);
+  const lastUsername = useGameStore((state) => state.lastUsername);
   const gameMode = useGameStore((state) => state.gameMode);
   const setGameMode = useGameStore((state) => state.setGameMode);
   const registerPlayer = useGameStore((state) => state.registerPlayer);
-  const [name, setName] = useState('');
-  const [formError, setFormError] = useState<string | null>(null);
+  const clearLastUsername = useGameStore((state) => state.clearLastUsername);
+  const [formError, setFormError] = useState('');
+  const [isRegistering, setIsRegistering] = useState(false);
   const auth = useSupabaseAuth();
 
   useEffect(() => {
@@ -46,15 +53,49 @@ export default function HomeView() {
     }
   }, [playerName, setScreen]);
 
-  const handleStart = async () => {
-    const effectiveName = auth.profile?.username ?? name;
-    const result = await registerPlayer(effectiveName);
-    if (!result.ok) {
-      setFormError(result.error ?? 'Nombre no válido.');
-      return;
+  const claimedUsername = auth.profile?.username ?? null;
+  const lockedName = claimedUsername ?? lastUsername;
+
+  const handleClaimLocal = async (username: string) => {
+    setFormError('');
+    setIsRegistering(true);
+    try {
+      const remote = await fetchRemoteScores();
+      if (isUsernameTakenOnline(username, remote, claimedUsername)) {
+        setFormError(LOCAL_NAME_TAKEN_ONLINE_ERROR);
+        return;
+      }
+      const result = await registerPlayer(username);
+      if (!result.ok) {
+        setFormError(result.error ?? 'Nombre no válido.');
+        return;
+      }
+      setScreen('game');
+    } finally {
+      setIsRegistering(false);
     }
-    setFormError(null);
-    setScreen('game');
+  };
+
+  const handlePlayLocked = async () => {
+    if (lockedName === null || isRegistering) return;
+    setFormError('');
+    setIsRegistering(true);
+    try {
+      const remote = await fetchRemoteScores();
+      if (isUsernameTakenOnline(lockedName, remote, claimedUsername)) {
+        clearLastUsername();
+        setFormError(LOCAL_NAME_TAKEN_ONLINE_ERROR);
+        return;
+      }
+      const result = await registerPlayer(lockedName);
+      if (!result.ok) {
+        setFormError(result.error ?? 'Nombre no válido.');
+        return;
+      }
+      setScreen('game');
+    } finally {
+      setIsRegistering(false);
+    }
   };
 
   if (auth.requiresUsername) {
@@ -88,8 +129,6 @@ export default function HomeView() {
     );
   }
 
-  const claimedUsername = auth.profile?.username ?? null;
-
   const renderAuthBox = () => {
     if (!auth.isConfigured || auth.isLoading) {
       return null;
@@ -115,6 +154,48 @@ export default function HomeView() {
     );
   };
 
+  if (lockedName === null) {
+    return (
+      <View style={styles.homeScreen}>
+        {!isMobile && (
+          <View style={styles.topBar}>
+            <ThemeToggle />
+          </View>
+        )}
+        <View style={styles.heroLogo}>
+          <AppLogo size={112} />
+        </View>
+        <MainCard>
+          <Text style={styles.homeTitle}>Piedra, papel o tijera</Text>
+          <SegmentedToggle
+            value={gameMode}
+            options={MODE_OPTIONS}
+            onChange={setGameMode}
+            variant="fill"
+            trackAccessibilityLabel="Selector de modo de juego"
+          />
+          <UsernameSetup
+            error={formError}
+            isSaving={isRegistering}
+            initialUsername=""
+            onClaimUsername={handleClaimLocal}
+            description="Este será tu nombre de jugador en este dispositivo."
+            submitTitle="Jugar"
+            submitAccessibilityLabel="Empezar a jugar"
+            inputAccessibilityLabel="Nombre del jugador"
+          />
+          <AppButton
+            title="Ver ranking"
+            accessibilityLabel="Ver ranking"
+            variant="ghostlight"
+            onPress={() => setScreen('ranking')}
+          />
+          {renderAuthBox()}
+        </MainCard>
+      </View>
+    );
+  }
+
   return (
     <View style={styles.homeScreen}>
       {!isMobile && (
@@ -127,24 +208,8 @@ export default function HomeView() {
       </View>
       <MainCard>
         <Text style={styles.homeTitle}>Piedra, papel o tijera</Text>
-        <Text style={styles.homeSubtitle}>
-          {claimedUsername !== null
-            ? `Jugarás como ${claimedUsername}`
-            : 'Introduce tu nombre para jugar'}
-        </Text>
-        <TextInput
-          style={styles.nameInput}
-          value={claimedUsername ?? name}
-          onChangeText={setName}
-          placeholder="Tu nombre"
-          placeholderTextColor={theme.textMuted}
-          accessibilityLabel="Nombre del jugador"
-          autoCapitalize="words"
-          editable={claimedUsername === null}
-          returnKeyType="done"
-          onSubmitEditing={handleStart}
-        />
-        {formError !== null && <Text style={styles.formError}>{formError}</Text>}
+        <Text style={styles.greeting}>Hola, {lockedName} 😊</Text>
+        {formError !== '' && <Text style={styles.formError}>{formError}</Text>}
         <SegmentedToggle
           value={gameMode}
           options={MODE_OPTIONS}
@@ -152,7 +217,12 @@ export default function HomeView() {
           variant="fill"
           trackAccessibilityLabel="Selector de modo de juego"
         />
-        <AppButton title="Jugar" accessibilityLabel="Empezar a jugar" onPress={handleStart} />
+        <AppButton
+          title="Jugar"
+          accessibilityLabel="Empezar a jugar"
+          disabled={isRegistering}
+          onPress={handlePlayLocked}
+        />
         <AppButton
           title="Ver ranking"
           accessibilityLabel="Ver ranking"

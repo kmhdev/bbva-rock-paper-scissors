@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { User } from '@supabase/supabase-js';
-import { getGoogleNameSuggestion } from './Home.helpers';
+import type { PlayerScore } from '../../types/types';
+import { getGoogleNameSuggestion, isUsernameTakenOnline } from './Home.helpers';
 
 function makeUser(overrides: Partial<User> = {}): User {
   return {
@@ -37,5 +38,36 @@ describe('getGoogleNameSuggestion', () => {
   it('caps the suggestion at 20 chars', () => {
     const user = makeUser({ user_metadata: { full_name: 'a'.repeat(40) } });
     expect(getGoogleNameSuggestion(user)).toBe('a'.repeat(20));
+  });
+});
+
+describe('isUsernameTakenOnline', () => {
+  const remote: PlayerScore[] = [
+    { username: 'AnaOnline', score: 9 },
+    { username: 'Zoe', score: 4 },
+  ];
+
+  it('returns false without remote names', () => {
+    expect(isUsernameTakenOnline('AnaOnline', [])).toBe(false);
+  });
+
+  it('detects collisions ignoring case and surrounding spaces', () => {
+    expect(isUsernameTakenOnline('anaonline', remote)).toBe(true);
+    expect(isUsernameTakenOnline('  ANAONLINE  ', remote)).toBe(true);
+    expect(isUsernameTakenOnline('zoe', remote)).toBe(true);
+  });
+
+  it('allows names nobody uses online', () => {
+    expect(isUsernameTakenOnline('Kike', remote)).toBe(false);
+  });
+
+  it('exempts the owner playing with their own claimed name', () => {
+    expect(isUsernameTakenOnline('anaonline', remote, 'AnaOnline')).toBe(false);
+    expect(isUsernameTakenOnline('AnaOnline', remote, 'anaonline')).toBe(false);
+    expect(isUsernameTakenOnline('Zoe', remote, 'AnaOnline')).toBe(true);
+  });
+
+  it('returns false for empty candidates', () => {
+    expect(isUsernameTakenOnline('   ', remote)).toBe(false);
   });
 });

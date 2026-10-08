@@ -31,23 +31,11 @@ export const getStyles = (theme: ThemeColors) => {
       justifyContent: 'center',
       backgroundColor: 'transparent',
     },
-    homeSubtitle: {
-      color: theme.textMuted,
-      fontSize: 16,
-      textAlign: 'center',
-    },
-    nameInput: {
-      width: '100%',
-      maxWidth: WEB_CONTENT_MAX_WIDTH,
-      alignSelf: 'center',
-      marginHorizontal: 'auto',
-      padding: 14,
-      borderRadius: 12,
-      backgroundColor: theme.background,
-      borderWidth: 1,
-      borderColor: theme.border,
+    greeting: {
       color: theme.text,
-      fontSize: 16,
+      fontSize: 20,
+      fontWeight: '700',
+      textAlign: 'center',
     },
     formError: {
       color: theme.danger,

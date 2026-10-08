@@ -76,11 +76,11 @@ describe('GameScreen', () => {
     expect(mockSetScreen).toHaveBeenCalledWith('home');
   });
 
-  it('shows name, score and the three classic choices', async () => {
+  it('shows the score and the three classic choices', async () => {
     seedSession();
     await renderGame();
-    expect(screen.getByText('Hola, Ana')).toBeTruthy();
     expect(screen.getByText('Puntos: 0')).toBeTruthy();
+    expect(screen.queryByText('Hola, Ana')).toBeNull();
     expect(screen.getByLabelText('Elegir piedra')).toBeTruthy();
     expect(screen.getByLabelText('Elegir papel')).toBeTruthy();
     expect(screen.getByLabelText('Elegir tijera')).toBeTruthy();
