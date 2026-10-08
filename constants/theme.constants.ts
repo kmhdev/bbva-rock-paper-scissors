@@ -1,6 +1,6 @@
 import type { ThemeColors, ThemeName } from '../types/types';
 
-/** AsyncStorage key for theme persistence. */
+/** Clave de AsyncStorage para persistir el tema. */
 export const STORAGE_KEY_THEME = '@bbva-rps:theme';
 
 export const DEFAULT_THEME: ThemeName = 'dark';

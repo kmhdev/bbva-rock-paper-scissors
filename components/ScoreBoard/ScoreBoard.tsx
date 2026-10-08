@@ -6,7 +6,7 @@ interface ScoreBoardProps {
   score: number;
 }
 
-/** Header card showing the current points. */
+/** Cabecera que muestra los puntos actuales. */
 export default function ScoreBoard({ score }: ScoreBoardProps) {
   const { theme } = useTheme();
   const styles = getStyles(theme);

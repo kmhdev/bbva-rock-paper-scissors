@@ -9,9 +9,9 @@ const MAX_USERNAME_LENGTH = 20;
 let cachedClient: SupabaseClient | null | undefined;
 
 /**
- * Bonus (ranking online): Supabase-backed score storage.
- * Returns null when the project is not configured, so the app keeps
- * working fully offline with local scores. Configure with:
+ * Bonus (ranking online): almacenamiento de puntuaciones con Supabase.
+ * Devuelve null cuando el proyecto no está configurado, así la app sigue
+ * funcionando offline con las marcas locales. Se configura con:
  * EXPO_PUBLIC_SUPABASE_URL + EXPO_PUBLIC_SUPABASE_ANON_KEY
  */
 export function getSupabaseClient(): SupabaseClient | null {
@@ -102,7 +102,7 @@ export async function submitOnlineScore(score: number): Promise<void> {
   if (error) return;
 }
 
-/** Merges local and remote scores keeping the best score per player. */
+/** Combina marcas locales y remotas quedándose con la mejor por jugador. */
 export function mergeScores(local: PlayerScore[], remote: PlayerScore[]): PlayerScore[] {
   const bestByPlayer = new Map<string, PlayerScore>();
   for (const entry of [...local, ...remote]) {

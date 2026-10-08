@@ -15,9 +15,9 @@ interface ThemeContextValue {
 const ThemeContext = createContext<ThemeContextValue | undefined>(undefined);
 
 /**
- * Theme provider (ported from quiniela-native): named dark/light themes,
- * persisted across restarts, web document chrome in sync. Renders nothing
- * until the stored theme has been read to avoid a theme flash.
+ * Proveedor de tema (portado de quiniela-native): temas claro/oscuro con nombre,
+ * persistidos entre reinicios y sincronizados con el documento web. No renderiza
+ * nada hasta haber leído el tema guardado para evitar un parpadeo de tema.
  */
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setThemeState] = useState<ThemeColors>(DARK_THEME);

@@ -48,7 +48,7 @@ export interface GoogleSignInButtonProps {
   testID?: string;
 }
 
-/** Claimed public username (ported from espanografia profiles). Immutable. */
+/** Nombre público reclamado (portado de los perfiles de espanografia). Inmutable. */
 export interface UserProfile {
   user_id: string;
   username: string;

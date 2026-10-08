@@ -1,8 +1,8 @@
 import { RandomMachineStrategy, SmartMachineStrategy } from './machineService';
 
 /**
- * Shared strategy singletons used by the game view.
- * Tests can jest.mock this module to make the machine deterministic.
+ * Singletons de estrategia compartidos que usa la vista de juego.
+ * Los tests pueden mockear este módulo para una máquina determinista.
  */
 export const randomMachineStrategy = new RandomMachineStrategy();
 export const smartMachineStrategy = new SmartMachineStrategy();

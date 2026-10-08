@@ -80,29 +80,6 @@ export function useSidebarLogic({
   };
 }
 
-export function useThemeFade(toggleTheme: () => void) {
-  const [themeFade] = useState(new Animated.Value(1));
-
-  const handleThemeChange = () => {
-    Animated.sequence([
-      Animated.timing(themeFade, {
-        toValue: 0,
-        duration: 180,
-        useNativeDriver: true,
-      }),
-      Animated.timing(themeFade, {
-        toValue: 1,
-        duration: 180,
-        useNativeDriver: true,
-      }),
-    ]).start(() => {
-      toggleTheme();
-    });
-  };
-
-  return { themeFade, handleThemeChange };
-}
-
 export function useSidebarAuth(onClose: () => void) {
   const auth = useSupabaseAuth();
   const isVisible = auth.isConfigured && !auth.isLoading && auth.user !== null;

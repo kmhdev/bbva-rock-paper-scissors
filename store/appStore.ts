@@ -5,9 +5,10 @@ import { createGameStore } from './gameStore';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 /**
- * Production wiring: scores in AsyncStorage (offline-first, works on
- * native and web) and session slice persisted with zustand/middleware.
- * Import this from views; never from vitest unit tests (native modules).
+ * Cableado de producción: puntuaciones en AsyncStorage (offline primero,
+ * funciona en nativo y web) y sesión persistida con zustand/middleware.
+ * Importar desde las vistas; nunca desde los tests unitarios de vitest
+ * (módulos nativos).
  */
 const productionScoreService = new ScoreService(asyncStorageBackend);
 

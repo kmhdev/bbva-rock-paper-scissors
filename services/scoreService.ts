@@ -1,7 +1,7 @@
 import { POINTS_PER_LOSS, POINTS_PER_WIN, STORAGE_KEY_SCORES } from '../constants/game.constants';
 import type { PlayerScore } from '../types/types';
 
-/** Minimal async key-value backend so the service is testable without native modules. */
+/** Backend mínimo async de clave-valor para poder testear el servicio sin módulos nativos. */
 export interface KeyValueStorage {
   getItem(key: string): Promise<string | null>;
   setItem(key: string, value: string): Promise<void>;
@@ -16,10 +16,11 @@ interface StoredPlayerEntry {
 type StoredScores = Record<string, StoredPlayerEntry>;
 
 /**
- * Service A — user scores.
- * Stores each player's score, retrieves it by username (case-insensitive,
- * so re-entering an existing name resumes the game), and lists every
- * player for the ranking view. Persists offline through the injected backend.
+ * Servicio A — puntuaciones de usuario.
+ * Guarda la puntuación de cada jugador, la recupera por nombre (insensible a
+ * mayúsculas, así retomar un nombre existente continúa la partida) y lista
+ * todos los jugadores para la vista de ranking. Persiste offline con el
+ * backend inyectado.
  */
 export class ScoreService {
   constructor(
@@ -54,7 +55,7 @@ export class ScoreService {
     await this.writeAll(scores);
   }
 
-  /** Adds one point to the player's score and returns the new total. */
+  /** Suma un punto a la puntuación del jugador y devuelve el nuevo total. */
   async addWin(username: string): Promise<number> {
     const next = (await this.getScore(username)) + POINTS_PER_WIN;
     await this.saveScore(username, next);
@@ -62,8 +63,8 @@ export class ScoreService {
   }
 
   /**
-   * Subtracts one point from the player's score and returns the new total.
-   * The score may go negative; there is no floor.
+   * Resta un punto a la puntuación del jugador y devuelve el nuevo total.
+   * La puntuación puede quedar en negativo; no hay mínimo.
    */
   async addLoss(username: string): Promise<number> {
     const next = (await this.getScore(username)) - POINTS_PER_LOSS;
@@ -71,7 +72,7 @@ export class ScoreService {
     return next;
   }
 
-  /** All players ordered by score desc, then name asc. Used by the ranking view. */
+  /** Todos los jugadores ordenados por puntuación desc y nombre asc. Lo usa el ranking. */
   async getAllScores(): Promise<PlayerScore[]> {
     const scores = await this.readAll();
     return Object.values(scores)

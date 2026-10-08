@@ -1,9 +1,8 @@
--- Claimed online identity (ported from espanografia).
--- Each Google user picks a public username once (public.profiles,
--- immutable). Scores are submitted through
--- public.submit_player_score(), which resolves the display name
--- server-side from auth.uid() so clients can never spoof another
--- player's name. Run after schema.sql / 20261008_players_user_id.sql.
+-- Identidad online reclamada (portada de espanografia).
+-- Cada usuario de Google elige un nombre público una sola vez (public.profiles,
+-- inmutable). Las marcas se envían con public.submit_player_score(), que resuelve
+-- el nombre visible en el servidor desde auth.uid() para que ningún cliente pueda
+-- suplantar a otro jugador. Ejecutar tras schema.sql / 20261008_players_user_id.sql.
 
 create table if not exists public.profiles (
   user_id uuid primary key default auth.uid() references auth.users(id) on delete cascade,
@@ -62,9 +61,9 @@ begin
     raise exception 'Username required';
   end if;
 
-  -- A legacy row created before profiles existed may already use this
-  -- name: the claimer takes over anonymous rows, but never rows owned
-  -- by another authenticated user.
+  -- Una fila antigua creada antes de los perfiles puede usar ya este
+  -- nombre: quien lo reclama hereda las filas anónimas, pero nunca las de
+  -- otro usuario autenticado.
   select user_id
     into v_existing_user
     from public.players
@@ -87,8 +86,8 @@ $$;
 revoke all on function public.submit_player_score(integer) from public;
 grant execute on function public.submit_player_score(integer) to authenticated;
 
--- Close the legacy open write path: online writes go only through the
--- RPC above. Public reads stay untouched so the ranking keeps working.
+-- Se cierra la vía antigua de escritura abierta: online solo se escribe por el
+-- RPC de arriba. Las lecturas públicas no se tocan para que el ranking siga funcionando.
 revoke all on players from anon, authenticated;
 grant select on players to anon, authenticated;
 

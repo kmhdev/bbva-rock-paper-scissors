@@ -5,8 +5,8 @@ import { getStyles } from './ThemeToggle.styles';
 import { useThemeFadeAnimation } from './ThemeToggle.helpers';
 
 /**
- * Theme toggle button (ported from quiniela-native ToolbarWeb): sun icon in
- * dark mode, moon icon in light mode, with a fade animation on switch.
+ * Botón de cambio de tema (portado de ToolbarWeb de quiniela-native): icono de
+ * sol en modo oscuro y de luna en modo claro, con animación de fundido.
  */
 export default function ThemeToggle() {
   const { theme, isDark, toggleTheme } = useTheme();

@@ -31,7 +31,7 @@ export function getGoogleNameSuggestion(user: User | null): string {
 }
 
 /**
- * True si un nombre local choca (insensible a mayúsculas) con algún
+ * Indica si un nombre local choca (insensible a mayúsculas) con algún
  * nombre del ranking online. `ownOnlineName` exime al dueño: quien
  * juega con su propio nombre reclamado puede seguir usándolo en local.
  */
@@ -51,7 +51,7 @@ export function isUsernameTakenOnline(
 }
 
 /**
- * True cuando la sesión local (p. ej. "x") no coincide con el nombre
+ * Indica cuando la sesión local (p. ej. "x") no coincide con el nombre
  * reclamado online (p. ej. perfil "y"). Sin esta guarda, la marca local
  * de "x" se enviaría como "y" y el ranking mostraría dos nombres para
  * el mismo user_id (puntuaciones ficticias).

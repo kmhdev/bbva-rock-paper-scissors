@@ -28,9 +28,9 @@ const HARD_MODE_OPTIONS: ReadonlyArray<SegmentedToggleOption<HardModeValue>> = [
 ];
 
 /**
- * Game view: intentionally thin. It injects service A (scores, via the
- * store), service B (rules, inside the store) and service C (machine
- * strategies) and orchestrates them with the reveal delay.
+ * Vista Game: intencionadamente fina. Inyecta el servicio A (puntos, vía el
+ * store), el servicio B (reglas, dentro del store) y el servicio C
+ * (estrategias de la máquina) y los orquesta con el retardo de revelado.
  */
 export default function GameView() {
   const { setScreen } = useNavigation();
@@ -63,7 +63,7 @@ export default function GameView() {
     }
   }, [playerName, setScreen]);
 
-  // Username único: con perfil reclamado no se puede jugar como otro
+  // Nombre de usuario único: con perfil reclamado no se puede jugar como otro
   // nombre local ("x"); la marca de "x" nunca debe enviarse como "y".
   useEffect(() => {
     if (
@@ -83,49 +83,72 @@ export default function GameView() {
 
   const choices = getChoicesForMode(gameMode);
 
+  const clearRevealTimer = () => {
+    if (revealTimer.current !== null) {
+      clearTimeout(revealTimer.current);
+      revealTimer.current = null;
+    }
+  };
+
+  // Efectos tras resolver la ronda: vibración al perder y envío online al ganar.
+  const settleRoundSideEffects = () => {
+    const settled = useGameStore.getState();
+    if (settled.outcome === 'lose') {
+      void vibrateOnLoss();
+    }
+    if (settled.outcome === 'win' && settled.playerName !== null) {
+      // El servidor resuelve el nombre desde el perfil reclamado;
+      // sin login, sin perfil o jugando como otro nombre local ("x"
+      // vs perfil "y") la marca queda solo en local.
+      if (
+        hasOnlineIdentity &&
+        claimedUsername !== null &&
+        ScoreService.isSameUsername(settled.playerName, claimedUsername)
+      ) {
+        void submitOnlineScore(settled.score);
+      }
+    }
+  };
+
+  // Turno de la máquina: elige estrategia, resuelve la ronda y asienta efectos.
+  const revealMachineMove = () => {
+    const latest = useGameStore.getState();
+    const strategy = latest.smartMachine ? smartMachineStrategy : randomMachineStrategy;
+    const machineChoice = strategy.pickMove({
+      playerHistory: latest.playerHistory,
+      machineHistory: latest.machineHistory,
+      availableChoices: getChoicesForMode(latest.gameMode),
+    });
+    void latest.resolveRound(machineChoice).then(settleRoundSideEffects);
+  };
+
   const handlePick = (pick: Choice) => {
     const store = useGameStore.getState();
     if (store.machineThinking) return;
     store.startRound(pick);
-    if (revealTimer.current !== null) {
-      clearTimeout(revealTimer.current);
-    }
-    revealTimer.current = setTimeout(() => {
-      const latest = useGameStore.getState();
-      const strategy = latest.smartMachine ? smartMachineStrategy : randomMachineStrategy;
-      const machineChoice = strategy.pickMove({
-        playerHistory: latest.playerHistory,
-        machineHistory: latest.machineHistory,
-        availableChoices: getChoicesForMode(latest.gameMode),
-      });
-      void latest.resolveRound(machineChoice).then(() => {
-        const settled = useGameStore.getState();
-        if (settled.outcome === 'lose') {
-          void vibrateOnLoss();
-        }
-        if (settled.outcome === 'win' && settled.playerName !== null) {
-          // El servidor resuelve el nombre desde el perfil reclamado;
-          // sin login, sin perfil o jugando como otro nombre local ("x"
-          // vs perfil "y") la marca queda solo en local.
-          if (
-            hasOnlineIdentity &&
-            claimedUsername !== null &&
-            ScoreService.isSameUsername(settled.playerName, claimedUsername)
-          ) {
-            void submitOnlineScore(settled.score);
-          }
-        }
-      });
-    }, MACHINE_REVEAL_DELAY_MS);
+    clearRevealTimer();
+    revealTimer.current = setTimeout(revealMachineMove, MACHINE_REVEAL_DELAY_MS);
   };
 
   const handleExit = () => {
-    if (revealTimer.current !== null) {
-      clearTimeout(revealTimer.current);
-    }
+    clearRevealTimer();
     useGameStore.getState().exitToHome();
     setScreen('home');
   };
+
+  const renderChoicesRow = () => (
+    <View style={choices.length > 3 ? styles.choicesRowWrapped : styles.choicesRow}>
+      {choices.map((choice) => (
+        <ChoiceButton
+          key={choice}
+          choice={choice}
+          selected={playerPick === choice && outcome === null}
+          disabled={machineThinking}
+          onPress={handlePick}
+        />
+      ))}
+    </View>
+  );
 
   return (
     <View style={styles.gameScreen}>
@@ -138,17 +161,7 @@ export default function GameView() {
           thinking={machineThinking}
           outcome={outcome}
         />
-        <View style={choices.length > 3 ? styles.choicesRowWrapped : styles.choicesRow}>
-          {choices.map((choice) => (
-            <ChoiceButton
-              key={choice}
-              choice={choice}
-              selected={playerPick === choice && outcome === null}
-              disabled={machineThinking}
-              onPress={handlePick}
-            />
-          ))}
-        </View>
+        {renderChoicesRow()}
         <SegmentedToggle
           value={smartMachine ? 'on' : 'off'}
           options={HARD_MODE_OPTIONS}

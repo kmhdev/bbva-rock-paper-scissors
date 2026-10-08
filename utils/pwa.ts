@@ -13,10 +13,10 @@ interface WebNavigator {
 }
 
 /**
- * Registers the offline service worker on web production builds only.
- * In dev it unregisters previous workers and skips: a cached SW would
- * serve stale bundles and break hot reload.
- * On native (no serviceWorker in navigator) it resolves 'skipped'.
+ * Registra el service worker offline solo en builds web de producción.
+ * En dev desregistra workers previos y omite: un SW cacheado serviría
+ * bundles viejos y rompería el hot reload.
+ * En nativo (sin serviceWorker en navigator) resuelve 'skipped'.
  */
 export async function registerServiceWorker(): Promise<ServiceWorkerResult> {
   try {

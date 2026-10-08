@@ -27,7 +27,7 @@ export function getLocalCurrentScore(
   return { username: saved.username, score: saved.score };
 }
 
-/** True si hay que mostrar el reclamo de la puntuación local vía Google. */
+/** Indica si hay que mostrar el reclamo de la puntuación local vía Google. */
 export function shouldShowClaim(
   localCurrent: PlayerScore | null,
   isConfigured: boolean,
@@ -73,7 +73,7 @@ export function shouldSubmitOnlineScore(
 }
 
 /**
- * True si la fila del ranking corresponde al usuario local actual.
+ * Indica si la fila del ranking corresponde al usuario local actual.
  * Comparación insensible a mayúsculas/espacios para no duplicar
  * "Ana" vs "ana".
  */

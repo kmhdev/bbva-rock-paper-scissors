@@ -15,7 +15,7 @@ export const CHOICES_BY_MODE: Record<GameMode, readonly Choice[]> = {
   extended: EXTENDED_CHOICES,
 };
 
-/** For each choice, the choices it beats. Single source of truth for rules. */
+/** Para cada jugada, las jugadas a las que gana. Única fuente de verdad de las reglas. */
 export const BEATS: Record<Choice, readonly Choice[]> = {
   rock: ['scissors', 'lizard'],
   paper: ['rock', 'spock'],
@@ -24,7 +24,7 @@ export const BEATS: Record<Choice, readonly Choice[]> = {
   spock: ['rock', 'scissors'],
 };
 
-/** UI metadata per choice: Spanish labels, emoji and accessible names. */
+/** Metadatos de IU por jugada: etiquetas en español, emoji y nombres accesibles. */
 export const CHOICE_META: Record<Choice, { label: string; emoji: string; actionLabel: string }> = {
   rock: { label: 'Piedra', emoji: '✊', actionLabel: 'Elegir piedra' },
   paper: { label: 'Papel', emoji: '✋', actionLabel: 'Elegir papel' },
@@ -32,20 +32,20 @@ export const CHOICE_META: Record<Choice, { label: string; emoji: string; actionL
   lizard: { label: 'Lagarto', emoji: '🦎', actionLabel: 'Elegir lagarto' },
   spock: { label: 'Spock', emoji: '🖖', actionLabel: 'Elegir Spock' },
 };
-/** Minimum delay (ms) before the machine reveals its pick. */
+/** Retardo mínimo (ms) antes de que la máquina muestre su jugada. */
 export const MACHINE_REVEAL_DELAY_MS = 1200;
 
-/** Points awarded per won round. */
+/** Puntos que se suman por ronda ganada. */
 export const POINTS_PER_WIN = 1;
 
-/** Points subtracted per lost round. Score may go negative. */
+/** Puntos que se restan por ronda perdida. La puntuación puede quedar en negativo. */
 export const POINTS_PER_LOSS = 1;
 
-/** AsyncStorage key for local score persistence. */
+/** Clave de AsyncStorage para guardar las puntuaciones en local. */
 export const STORAGE_KEY_SCORES = '@bbva-rps:scores';
 
-/** AsyncStorage key for zustand store persistence. */
+/** Clave de AsyncStorage para persistir el store de zustand. */
 export const STORAGE_KEY_GAME_STORE = '@bbva-rps:game-store';
 
-/** Vibration duration (ms) on web when the player loses. */
+/** Duración de la vibración (ms) en web cuando el jugador pierde. */
 export const LOSE_VIBRATION_MS = 200;

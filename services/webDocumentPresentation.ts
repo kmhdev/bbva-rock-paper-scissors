@@ -10,8 +10,8 @@ function ensureMeta(name: string, content: string): void {
 }
 
 /**
- * Syncs the web document chrome with the active theme (ported from
- * quiniela-native, minus its mobile-web specifics). No-ops outside web.
+ * Sincroniza el chrome del documento web con el tema activo (portado de
+ * quiniela-native, sin sus detalles de móvil-web). No hace nada fuera de web.
  */
 export function syncWebDocumentPresentation(backgroundColor: string): void {
   if (typeof document === 'undefined') return;

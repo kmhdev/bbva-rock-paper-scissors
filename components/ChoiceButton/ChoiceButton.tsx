@@ -11,7 +11,7 @@ interface ChoiceButtonProps {
   onPress: (choice: Choice) => void;
 }
 
-/** Reusable pick button (rock/paper/scissors/lizard/spock). */
+/** Botón reutilizable de jugada (piedra/papel/tijera/lagarto/spock). */
 export default function ChoiceButton({ choice, selected, disabled, onPress }: ChoiceButtonProps) {
   const { theme } = useTheme();
   const styles = getStyles(theme);

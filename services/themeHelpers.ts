@@ -4,8 +4,9 @@ import { asyncStorageBackend } from './asyncStorageBackend';
 import type { KeyValueStorage } from './scoreService';
 
 /**
- * Theme persistence (ported from quiniela-native). Storage is injectable so
- * unit tests run with an in-memory backend; production uses AsyncStorage.
+ * Persistencia del tema (portada de quiniela-native). El almacenamiento es
+ * inyectable para que los tests usen un backend en memoria; en producción
+ * se usa AsyncStorage.
  */
 export async function getStoredTheme(
   storage: KeyValueStorage = asyncStorageBackend,
@@ -16,7 +17,7 @@ export async function getStoredTheme(
       return stored;
     }
   } catch {
-    // Ignore read errors and fall back to default
+    // Se ignoran los errores de lectura y se usa el valor por defecto
   }
   return DEFAULT_THEME;
 }
@@ -28,6 +29,6 @@ export async function setStoredTheme(
   try {
     await storage.setItem(STORAGE_KEY_THEME, theme);
   } catch {
-    // Ignore storage errors
+    // Se ignoran los errores de almacenamiento
   }
 }

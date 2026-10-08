@@ -4,7 +4,7 @@ import type { NavigationContextValue, Screen } from '../types/types';
 
 const NavigationContext = createContext<NavigationContextValue | undefined>(undefined);
 
-/** App navigation (ported from quiniela-native): single entry, state-driven screens. */
+/** Navegación de la app (portada de quiniela-native): entrada única, pantallas por estado. */
 export function NavigationProvider({ children }: { children: ReactNode }) {
   const [screen, setScreenState] = useState<Screen>('home');
 

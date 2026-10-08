@@ -1,7 +1,8 @@
 import { Animated, Pressable, Text, View } from 'react-native';
 import { useTheme } from '../../context/ThemeContext';
 import type { SegmentedToggleProps } from '../../types/types';
-import { getStyles, useSegmentedToggleAnimation } from './SegmentedToggle.styles';
+import { getStyles } from './SegmentedToggle.styles';
+import { useSegmentedToggleAnimation } from './SegmentedToggle.helpers';
 
 /**
  * Toggle segmentado reutilizable con pill deslizante animada (spring).

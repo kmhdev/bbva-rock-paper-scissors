@@ -2,8 +2,8 @@ import { useMemo } from 'react';
 import { Platform } from 'react-native';
 
 /**
- * Retorna true si la plataforma es mobile (app nativa o navegador móvil),
- * false si es desktop web. Portado de quiniela-native.
+ * Indica si la plataforma es móvil (app nativa o navegador móvil) o
+ * escritorio web. Portado de quiniela-native.
  */
 export function useIsMobilePlatform(): boolean {
   return useMemo(() => {

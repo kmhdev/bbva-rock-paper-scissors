@@ -1,11 +1,11 @@
--- Supabase schema for the bonus online ranking.
--- Local AsyncStorage scores remain the source of truth offline.
+-- Esquema Supabase para el bonus del ranking online.
+-- Las marcas locales en AsyncStorage siguen siendo la fuente de verdad offline.
 --
--- Online identity (ported from espanografia): each Google user claims a
--- single public username once (public.profiles, immutable). Scores are
--- submitted through public.submit_player_score(), which resolves the
--- display name server-side from auth.uid() so clients can never spoof
--- another player's name. Anonymous users keep playing fully offline.
+-- Identidad online (portada de espanografia): cada usuario de Google reclama un
+-- único nombre público una sola vez (public.profiles, inmutable). Las marcas se
+-- envían con public.submit_player_score(), que resuelve el nombre visible en el
+-- servidor desde auth.uid() para que ningún cliente pueda suplantar a otro
+-- jugador. Sin login se sigue jugando offline sin límites.
 
 create table if not exists players (
   username text primary key,
@@ -17,7 +17,7 @@ create table if not exists players (
 
 create index if not exists players_user_id_idx on players(user_id);
 
--- Claimed username per Google user. Immutable: no update/delete policies.
+-- Nombre reclamado por usuario de Google. Inmutable: sin políticas de update/delete.
 create table if not exists public.profiles (
   user_id uuid primary key default auth.uid() references auth.users(id) on delete cascade,
   username text not null,
@@ -48,7 +48,7 @@ create policy "Users can create their own profile"
   to authenticated
   with check ((select auth.uid()) = user_id);
 
--- Reads stay public; writes go only through submit_player_score().
+-- Las lecturas siguen públicas; las escrituras solo van por submit_player_score().
 revoke all on players from anon, authenticated;
 grant select on players to anon, authenticated;
 
@@ -88,9 +88,9 @@ begin
     raise exception 'Username required';
   end if;
 
-  -- A legacy row created before profiles existed may already use this
-  -- name: the claimer takes over anonymous rows, but never rows owned
-  -- by another authenticated user.
+  -- Una fila antigua creada antes de los perfiles puede usar ya este
+  -- nombre: quien lo reclama hereda las filas anónimas, pero nunca las de
+  -- otro usuario autenticado.
   select user_id
     into v_existing_user
     from public.players

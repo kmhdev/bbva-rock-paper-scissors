@@ -6,7 +6,8 @@ import type { Screen } from '../../types/types';
 import { useTheme } from '../../context/ThemeContext';
 import { useIsMobilePlatform } from '../../hooks/useIsMobilePlatform';
 import type { SidebarProps } from '../../types/types';
-import { useSidebarAuth, useSidebarLogic, useThemeFade } from './Sidebar.helpers';
+import { useThemeFadeAnimation } from '../../hooks/useThemeFadeAnimation';
+import { useSidebarAuth, useSidebarLogic } from './Sidebar.helpers';
 import { getOverlayAnimatedStyle, getThemeFadeStyle } from './Sidebar.styles';
 
 const MENU_ROUTES = [
@@ -21,12 +22,77 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
   const { screen, setScreen } = useNavigation();
   const { panResponder, styles, animatedLeft, showOverlay, overlayAnim, handleOverlayClose } =
     useSidebarLogic({ open, onClose, theme });
-  const { themeFade, handleThemeChange } = useThemeFade(toggleTheme);
+  const { fade: themeFade, handleThemeChange } = useThemeFadeAnimation(toggleTheme);
   const authItem = useSidebarAuth(onClose);
 
   if (!isMobile) return null;
 
   const themeLabel = `Cambiar a tema ${theme.name === 'dark' ? 'claro' : 'oscuro'}`;
+
+  const renderRouteItems = () =>
+    MENU_ROUTES.map((item) => {
+      const isActive = screen === item.screen;
+      return (
+        <Pressable
+          key={item.screen}
+          style={styles.menuItem}
+          accessibilityRole="button"
+          accessibilityLabel={item.label}
+          onPress={() => {
+            setScreen(item.screen);
+            onClose();
+          }}
+        >
+          <Ionicons
+            name={item.icon}
+            size={30}
+            style={isActive ? styles.liveMenuIcon : styles.menuIcon}
+          />
+          <Text style={isActive ? styles.liveMenuText : styles.menuText}>{item.label}</Text>
+        </Pressable>
+      );
+    });
+
+  const renderThemeItem = () => (
+    <Animated.View style={getThemeFadeStyle(themeFade)}>
+      <Pressable
+        style={styles.menuItem}
+        accessibilityRole="button"
+        accessibilityLabel={themeLabel}
+        onPress={handleThemeChange}
+      >
+        <Ionicons
+          name={theme.name === 'dark' ? 'sunny-outline' : 'moon-outline'}
+          size={30}
+          style={styles.menuIcon}
+        />
+        <Text style={styles.menuText}>{themeLabel}</Text>
+      </Pressable>
+    </Animated.View>
+  );
+
+  const renderAuthItem = () => {
+    if (!authItem.isVisible) return null;
+    return (
+      <>
+        {authItem.error !== '' && (
+          <Text style={styles.authError} testID="sidebar-auth-error">
+            {authItem.error}
+          </Text>
+        )}
+        <Pressable
+          style={styles.menuItem}
+          accessibilityRole="button"
+          accessibilityLabel={authItem.accessibilityLabel}
+          testID={authItem.testID}
+          onPress={authItem.handleAuthPress}
+        >
+          <Ionicons name={authItem.icon} size={30} style={styles.menuIcon} />
+          <Text style={styles.menuText}>{authItem.label}</Text>
+        </Pressable>
+      </>
+    );
+  };
 
   return (
     <>
@@ -44,64 +110,9 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
         <SafeAreaView style={styles.safeArea} edges={['top', 'left']}>
           <View style={styles.content}>
             <View style={styles.menu}>
-              {MENU_ROUTES.map((item) => {
-                const isActive = screen === item.screen;
-                return (
-                  <Pressable
-                    key={item.screen}
-                    style={styles.menuItem}
-                    accessibilityRole="button"
-                    accessibilityLabel={item.label}
-                    onPress={() => {
-                      setScreen(item.screen);
-                      onClose();
-                    }}
-                  >
-                    <Ionicons
-                      name={item.icon}
-                      size={30}
-                      style={isActive ? styles.liveMenuIcon : styles.menuIcon}
-                    />
-                    <Text style={isActive ? styles.liveMenuText : styles.menuText}>
-                      {item.label}
-                    </Text>
-                  </Pressable>
-                );
-              })}
-              <Animated.View style={getThemeFadeStyle(themeFade)}>
-                <Pressable
-                  style={styles.menuItem}
-                  accessibilityRole="button"
-                  accessibilityLabel={themeLabel}
-                  onPress={handleThemeChange}
-                >
-                  <Ionicons
-                    name={theme.name === 'dark' ? 'sunny-outline' : 'moon-outline'}
-                    size={30}
-                    style={styles.menuIcon}
-                  />
-                  <Text style={styles.menuText}>{themeLabel}</Text>
-                </Pressable>
-              </Animated.View>
-              {authItem.isVisible && (
-                <>
-                  {authItem.error !== '' && (
-                    <Text style={styles.authError} testID="sidebar-auth-error">
-                      {authItem.error}
-                    </Text>
-                  )}
-                  <Pressable
-                    style={styles.menuItem}
-                    accessibilityRole="button"
-                    accessibilityLabel={authItem.accessibilityLabel}
-                    testID={authItem.testID}
-                    onPress={authItem.handleAuthPress}
-                  >
-                    <Ionicons name={authItem.icon} size={30} style={styles.menuIcon} />
-                    <Text style={styles.menuText}>{authItem.label}</Text>
-                  </Pressable>
-                </>
-              )}
+              {renderRouteItems()}
+              {renderThemeItem()}
+              {renderAuthItem()}
             </View>
           </View>
         </SafeAreaView>

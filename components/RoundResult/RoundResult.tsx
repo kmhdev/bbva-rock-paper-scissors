@@ -17,7 +17,7 @@ const OUTCOME_MESSAGE: Record<RoundOutcome, string> = {
   draw: 'Empate',
 };
 
-/** Shows the player pick, the machine pick (after its delay) and the verdict. */
+/** Muestra la jugada del jugador, la de la máquina (tras su retardo) y el veredicto. */
 export default function RoundResult({
   playerPick,
   machinePick,

@@ -52,9 +52,10 @@ const INITIAL_ROUND = {
 } as const;
 
 /**
- * Zustand store factory. ScoreService is injected so tests can use an
- * in-memory backend while production uses AsyncStorage. Persistence of the
- * session slice (player, mode) is opt-in via storage to keep unit tests sync.
+ * Factoría del store de zustand. El ScoreService se inyecta para que los tests
+ * usen un backend en memoria mientras producción usa AsyncStorage. La
+ * persistencia de la sesión (jugador, modo) es opt-in vía storage para
+ * mantener los tests unitarios síncronos.
  */
 export function createGameStore(scoreService: ScoreService, storage?: StateStorage) {
   const initializer = (
