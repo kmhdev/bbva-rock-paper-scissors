@@ -76,6 +76,7 @@ describe('GameScreen online submit', () => {
       machineThinking: false,
       playerHistory: [],
       machineHistory: [],
+      ownedOnlineNames: [],
     });
   });
 

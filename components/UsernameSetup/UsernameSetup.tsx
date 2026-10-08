@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Text, TextInput, View } from 'react-native';
 import { useTheme } from '../../context/ThemeContext';
 import type { UsernameSetupProps } from '../../types/types';
@@ -31,6 +31,19 @@ export default function UsernameSetup({
     initialUsername === '' ? '' : validateUsername(initialUsername),
   );
   const [submittedUsername, setSubmittedUsername] = useState<string | null>(null);
+  const prevInitialRef = useRef(initialUsername);
+
+  // Sincroniza la sugerencia tardía (p. ej. nombre local tras
+  // rehidratar el store) sin pisar lo que el usuario ya escribió.
+  useEffect(() => {
+    const prevInitial = prevInitialRef.current;
+    if (initialUsername === prevInitial) return;
+    prevInitialRef.current = initialUsername;
+    if (username === prevInitial || username === '') {
+      setUsername(initialUsername);
+      setValidationError(initialUsername === '' ? '' : validateUsername(initialUsername));
+    }
+  }, [initialUsername, username]);
 
   const visibleServerError =
     submittedUsername === null || submittedUsername === username ? error : '';

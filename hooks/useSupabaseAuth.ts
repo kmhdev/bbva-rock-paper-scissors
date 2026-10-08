@@ -118,11 +118,12 @@ export function useSupabaseAuth(): SupabaseAuthState {
     setIsClaimingUsername(false);
     if (!result.ok) {
       setError(result.error ?? 'No se pudo reservar el nombre.');
-      return;
+      return result;
     }
     if (result.profile) {
       setProfile(result.profile);
     }
+    return result;
   }, []);
 
   return {

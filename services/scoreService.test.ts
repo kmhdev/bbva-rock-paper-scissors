@@ -94,4 +94,21 @@ describe('ScoreService', () => {
     await service.resetAll();
     expect(writes).toEqual([JSON.stringify({})]);
   });
+
+  it('transferScore moves the best local mark without duplicating users', async () => {
+    const service = new ScoreService(createMemoryStorage());
+    await service.saveScore('nombre1', 5);
+    await expect(service.transferScore('nombre1', 'nombre2', 5)).resolves.toBe(5);
+    await expect(service.getScore('nombre2')).resolves.toBe(5);
+    await expect(service.getAllScores()).resolves.toEqual([{ username: 'nombre2', score: 5 }]);
+  });
+
+  it('transferScore keeps the higher mark and is a no-op for the same name', async () => {
+    const service = new ScoreService(createMemoryStorage());
+    await service.saveScore('nombre1', 3);
+    await service.saveScore('nombre2', 7);
+    await expect(service.transferScore('nombre1', 'nombre2', 3)).resolves.toBe(7);
+    await expect(service.getScore('nombre2')).resolves.toBe(7);
+    await expect(service.transferScore('Ana', 'ana')).resolves.toBe(0);
+  });
 });

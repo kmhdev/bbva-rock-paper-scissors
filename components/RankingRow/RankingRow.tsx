@@ -1,10 +1,15 @@
 import { Text, View } from 'react-native';
 import { useTheme } from '../../context/ThemeContext';
 import type { RankingRowProps } from '../../types/types';
-import { getStyles } from './RankingRow.styles';
+import { getPointsLabel, getStyles } from './RankingRow.styles';
 
 /** Fila de ranking reutilizable: posición, jugador y mejor marca. */
-export default function RankingRow({ position, username, score }: RankingRowProps) {
+export default function RankingRow({
+  position,
+  username,
+  score,
+  isCurrentUser = false,
+}: RankingRowProps) {
   const { theme } = useTheme();
   const styles = getStyles(theme);
 
@@ -12,9 +17,12 @@ export default function RankingRow({ position, username, score }: RankingRowProp
     <View style={styles.rankingRow}>
       <View style={styles.mainLine}>
         <Text style={styles.position}>#{position}</Text>
-        <Text style={styles.username}>{username}</Text>
+        <Text style={styles.username}>
+          {username}
+          {isCurrentUser ? ' (tú)' : ''}
+        </Text>
         <Text style={styles.score}>
-          {score} {score === 1 ? 'pto' : 'pts'}
+          {score} {getPointsLabel(score)}
         </Text>
       </View>
     </View>

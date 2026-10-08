@@ -1,5 +1,5 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
-import type { MergedScoreRow, PlayerScore, UserProfile } from '../types/types';
+import type { ClaimUsernameResult, MergedScoreRow, PlayerScore, UserProfile } from '../types/types';
 import { ScoreService } from './scoreService';
 
 const PLAYERS_TABLE = 'players';
@@ -61,11 +61,7 @@ export async function fetchProfile(userId: string): Promise<UserProfile | null> 
   return data as UserProfile;
 }
 
-export interface ClaimUsernameResult {
-  ok: boolean;
-  profile?: UserProfile;
-  error?: string;
-}
+export type { ClaimUsernameResult };
 
 /**
  * Reclama el nombre público una sola vez (inmutable, único

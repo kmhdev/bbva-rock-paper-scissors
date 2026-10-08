@@ -17,8 +17,17 @@ export interface GameStoreState {
   machineThinking: boolean;
   playerHistory: Choice[];
   machineHistory: Choice[];
+  /**
+   * Nombres online reclamados por este dispositivo (perfiles propios).
+   * Tras cerrar sesión eximen del bloqueo "nombre en uso online" para
+   * poder seguir jugando en local con el mismo nombre. Es solo una
+   * comodidad de UX: la identidad online real la impone el servidor
+   * (perfil inmutable + unicidad 23505), no esta lista.
+   */
+  ownedOnlineNames: string[];
   registerPlayer: (username: string) => Promise<{ ok: boolean; error?: string }>;
   clearLastUsername: () => void;
+  rememberOwnedOnlineName: (username: string) => void;
   startRound: (pick: Choice) => void;
   resolveRound: (machinePick: Choice) => Promise<void>;
   resetRound: () => void;
@@ -32,6 +41,7 @@ export interface PersistedGameSlice {
   lastUsername: string | null;
   gameMode: GameMode;
   smartMachine: boolean;
+  ownedOnlineNames: string[];
 }
 
 const INITIAL_ROUND = {
@@ -58,6 +68,7 @@ export function createGameStore(scoreService: ScoreService, storage?: StateStora
     score: 0,
     gameMode: 'classic',
     smartMachine: false,
+    ownedOnlineNames: [],
     ...INITIAL_ROUND,
     playerHistory: [],
     machineHistory: [],
@@ -80,6 +91,15 @@ export function createGameStore(scoreService: ScoreService, storage?: StateStora
     },
 
     clearLastUsername: () => set({ lastUsername: null }),
+
+    rememberOwnedOnlineName: (username: string) => {
+      const displayName = username.trim();
+      if (displayName === '') return;
+      const owned = get().ownedOnlineNames;
+      const list = Array.isArray(owned) ? owned : [];
+      if (list.some((name) => ScoreService.isSameUsername(name, displayName))) return;
+      set({ ownedOnlineNames: [...list, displayName] });
+    },
 
     startRound: (pick: Choice) => {
       set({ playerPick: pick, machinePick: null, outcome: null, machineThinking: true });
@@ -134,6 +154,7 @@ export function createGameStore(scoreService: ScoreService, storage?: StateStora
           lastUsername: state.lastUsername,
           gameMode: state.gameMode,
           smartMachine: state.smartMachine,
+          ownedOnlineNames: Array.isArray(state.ownedOnlineNames) ? state.ownedOnlineNames : [],
         }),
       }),
     );

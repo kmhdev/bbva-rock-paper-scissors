@@ -60,6 +60,7 @@ describe('HomeScreen with claimed identity', () => {
       machineThinking: false,
       playerHistory: [],
       machineHistory: [],
+      ownedOnlineNames: [],
     });
   });
 
@@ -74,6 +75,20 @@ describe('HomeScreen with claimed identity', () => {
     await fireEvent.changeText(screen.getByLabelText('Nombre de usuario online'), 'AnaOnline');
     await fireEvent.press(screen.getByLabelText('Reservar nombre'));
     expect(claimUsername).toHaveBeenCalledWith('AnaOnline');
+  });
+
+  it('auto-claims the local name after login instead of asking again', async () => {
+    const claimUsername = jest.fn(() =>
+      Promise.resolve({ ok: true, profile: { user_id: 'user-1', username: 'Pepe' } }),
+    );
+    jest
+      .spyOn(authHook, 'useSupabaseAuth')
+      .mockReturnValue(makeAuth({ user: mockUser, requiresUsername: true, claimUsername }));
+    useGameStore.setState({ lastUsername: 'Pepe' });
+    await renderHome();
+    expect(await screen.findByTestId('claim-auto-claim')).toBeTruthy();
+    await waitFor(() => expect(claimUsername).toHaveBeenCalledWith('Pepe'));
+    expect(screen.queryByLabelText('Nombre de usuario online')).toBeNull();
   });
 
   it('allows playing with your own claimed online name', async () => {

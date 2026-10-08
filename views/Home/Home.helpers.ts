@@ -63,3 +63,20 @@ export function needsIdentitySwitch(
   if (playerName === null || claimedUsername === null) return false;
   return !ScoreService.isSameUsername(playerName, claimedUsername);
 }
+
+/**
+ * Devuelve el nombre propio (reclamado antes en este dispositivo) que
+ * coincide con el candidato, o null. Tras cerrar sesión exime del
+ * bloqueo "nombre en uso online" para seguir jugando en local con el
+ * mismo nombre. Tolera listas ausentes o manipuladas.
+ */
+export function resolveOwnOnlineName(
+  ownedOnlineNames: readonly string[] | null | undefined,
+  candidate: string,
+): string | null {
+  if (!Array.isArray(ownedOnlineNames)) return null;
+  const found = ownedOnlineNames.find(
+    (name) => typeof name === 'string' && ScoreService.isSameUsername(name, candidate),
+  );
+  return found ?? null;
+}

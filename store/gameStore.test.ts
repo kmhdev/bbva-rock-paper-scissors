@@ -171,4 +171,30 @@ describe('gameStore', () => {
       smartMachine: true,
     });
   });
+
+  it('rememberOwnedOnlineName keeps owned names without duplicates', () => {
+    const store = createGameStore(scoreService);
+    expect(store.getState().ownedOnlineNames).toEqual([]);
+    store.getState().rememberOwnedOnlineName('AnaOnline');
+    store.getState().rememberOwnedOnlineName(' anaonline ');
+    store.getState().rememberOwnedOnlineName('   ');
+    expect(store.getState().ownedOnlineNames).toEqual(['AnaOnline']);
+  });
+
+  it('persists owned online names across reloads', async () => {
+    const stored: Record<string, string> = {};
+    const storage = {
+      getItem: (key: string) => stored[key] ?? null,
+      setItem: (key: string, value: string) => {
+        stored[key] = value;
+      },
+      removeItem: (key: string) => {
+        delete stored[key];
+      },
+    };
+    const store = createGameStore(scoreService, storage);
+    store.getState().rememberOwnedOnlineName('AnaOnline');
+    const persisted = JSON.parse(stored['@bbva-rps:game-store'] ?? '{}');
+    expect(persisted.state).toMatchObject({ ownedOnlineNames: ['AnaOnline'] });
+  });
 });

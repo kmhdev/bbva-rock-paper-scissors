@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Text, View } from 'react-native';
 import AppButton from '../../components/AppButton/AppButton';
 import AppLogo from '../../components/AppLogo/AppLogo';
@@ -9,16 +9,18 @@ import MainCard from '../../components/MainCard/MainCard';
 import ThemeToggle from '../../components/ThemeToggle/ThemeToggle';
 import { useIsMobilePlatform } from '../../hooks/useIsMobilePlatform';
 import { useSupabaseAuth } from '../../hooks/useSupabaseAuth';
-import { useGameStore } from '../../store/appStore';
+import { useGameStore, getScoreService } from '../../store/appStore';
 import { useNavigation } from '../../context/NavigationContext';
 import { useTheme } from '../../context/ThemeContext';
 import type { GameMode, SegmentedToggleOption } from '../../types/types';
 import { fetchRemoteScores } from '../../services/supabaseScoreStorage';
+import { ScoreService } from '../../services/scoreService';
 import {
   getGoogleNameSuggestion,
   isUsernameTakenOnline,
   LOCAL_NAME_TAKEN_ONLINE_ERROR,
   needsIdentitySwitch,
+  resolveOwnOnlineName,
 } from './Home.helpers';
 import { getStyles } from './Home.styles';
 
@@ -44,12 +46,62 @@ export default function HomeView() {
   const setGameMode = useGameStore((state) => state.setGameMode);
   const registerPlayer = useGameStore((state) => state.registerPlayer);
   const clearLastUsername = useGameStore((state) => state.clearLastUsername);
+  const ownedOnlineNames = useGameStore((state) => state.ownedOnlineNames);
+  const rememberOwnedOnlineName = useGameStore((state) => state.rememberOwnedOnlineName);
   const [formError, setFormError] = useState('');
   const [isRegistering, setIsRegistering] = useState(false);
   const auth = useSupabaseAuth();
 
   const claimedUsername = auth.profile?.username ?? null;
   const hasOnlineIdentity = auth.user !== null && auth.profile !== null && !auth.requiresUsername;
+
+  // El nombre local ya se cotejó contra el online al empezar a jugar:
+  // tras el login se reclama solo, sin pedir otro nombre. El formulario
+  // manual solo queda como fallback (alta fresca sin nombre local, o si
+  // entretanto lo ocuparon). Si el reclamado difiere del local, se mueve
+  // su mejor marca local al reclamado para no duplicar.
+  const claimSuggestion = playerName ?? lastUsername ?? getGoogleNameSuggestion(auth.user);
+  const handleClaimOnline = useCallback(
+    async (username: string) => {
+      const state = useGameStore.getState();
+      const localName = state.playerName ?? state.lastUsername;
+      const result = await auth.claimUsername(username);
+      if (!result || !result.ok || !result.profile) return;
+      const claimed = result.profile.username;
+      useGameStore.getState().rememberOwnedOnlineName(claimed);
+      if (localName && !ScoreService.isSameUsername(localName, claimed)) {
+        await getScoreService().transferScore(localName, claimed, state.score);
+        await useGameStore.getState().registerPlayer(claimed);
+      }
+    },
+    [auth],
+  );
+
+  const autoClaimLocalName = playerName ?? lastUsername ?? null;
+  const autoClaimAttemptedRef = useRef<string | null>(null);
+  const showAutoClaimPending =
+    auth.requiresUsername && autoClaimLocalName !== null && auth.error === '';
+  useEffect(() => {
+    if (!showAutoClaimPending || auth.isClaimingUsername) return;
+    const attemptKey = `${auth.user?.id ?? ''}:${autoClaimLocalName ?? ''}`;
+    if (autoClaimAttemptedRef.current === attemptKey) return;
+    autoClaimAttemptedRef.current = attemptKey;
+    void handleClaimOnline(autoClaimLocalName ?? '');
+  }, [
+    showAutoClaimPending,
+    auth.isClaimingUsername,
+    auth.user,
+    autoClaimLocalName,
+    handleClaimOnline,
+  ]);
+
+  useEffect(() => {
+    if (hasOnlineIdentity && claimedUsername !== null) {
+      // El perfil visto es propio: se recuerda para poder seguir en
+      // local con el mismo nombre tras cerrar sesión.
+      rememberOwnedOnlineName(claimedUsername);
+    }
+  }, [hasOnlineIdentity, claimedUsername, rememberOwnedOnlineName]);
 
   useEffect(() => {
     if (playerName === null) return;
@@ -72,7 +124,10 @@ export default function HomeView() {
     setIsRegistering(true);
     try {
       const remote = await fetchRemoteScores();
-      if (isUsernameTakenOnline(username, remote, claimedUsername)) {
+      // El nombre propio (reclamado antes aquí, aunque se haya cerrado
+      // sesión) está exento del bloqueo: es seguir en local, no suplantar.
+      const ownOnlineName = claimedUsername ?? resolveOwnOnlineName(ownedOnlineNames, username);
+      if (isUsernameTakenOnline(username, remote, ownOnlineName)) {
         setFormError(LOCAL_NAME_TAKEN_ONLINE_ERROR);
         return;
       }
@@ -93,7 +148,8 @@ export default function HomeView() {
     setIsRegistering(true);
     try {
       const remote = await fetchRemoteScores();
-      if (isUsernameTakenOnline(lockedName, remote, claimedUsername)) {
+      const ownOnlineName = claimedUsername ?? resolveOwnOnlineName(ownedOnlineNames, lockedName);
+      if (isUsernameTakenOnline(lockedName, remote, ownOnlineName)) {
         clearLastUsername();
         setFormError(LOCAL_NAME_TAKEN_ONLINE_ERROR);
         return;
@@ -122,13 +178,19 @@ export default function HomeView() {
         </View>
         <MainCard>
           <Text style={styles.homeTitle}>Piedra, papel o tijera</Text>
-          <UsernameSetup
-            error={auth.error}
-            isSaving={auth.isClaimingUsername}
-            initialUsername={getGoogleNameSuggestion(auth.user)}
-            onClaimUsername={auth.claimUsername}
-            onSignOut={auth.signOut}
-          />
+          {showAutoClaimPending ? (
+            <Text style={styles.greeting} testID="claim-auto-claim">
+              Reservando tu nombre @{autoClaimLocalName}…
+            </Text>
+          ) : (
+            <UsernameSetup
+              error={auth.error}
+              isSaving={auth.isClaimingUsername}
+              initialUsername={claimSuggestion}
+              onClaimUsername={handleClaimOnline}
+              onSignOut={auth.signOut}
+            />
+          )}
           <AppButton
             title="Ranking"
             accessibilityLabel="Ranking"

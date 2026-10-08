@@ -71,3 +71,16 @@ export function shouldSubmitOnlineScore(
   if (localCurrent === null || profileUsername === null) return false;
   return ScoreService.isSameUsername(localCurrent.username, profileUsername);
 }
+
+/**
+ * True si la fila del ranking corresponde al usuario local actual.
+ * Comparación insensible a mayúsculas/espacios para no duplicar
+ * "Ana" vs "ana".
+ */
+export function isLocalCurrentUser(
+  entryUsername: string,
+  localCurrentUsername: string | null | undefined,
+): boolean {
+  if (localCurrentUsername === null || localCurrentUsername === undefined) return false;
+  return ScoreService.isSameUsername(entryUsername, localCurrentUsername);
+}

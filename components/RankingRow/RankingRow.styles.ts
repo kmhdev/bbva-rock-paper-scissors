@@ -35,3 +35,12 @@ export const getStyles = (theme: ThemeColors) => {
     },
   });
 };
+
+/**
+ * Etiqueta de puntos: singular para ±1 (`pto`), plural en el resto.
+ * El 0 y los negativos usan plural (`0 pts`, `-5 pts`); la
+ * puntuación puede ser positiva, cero o negativa.
+ */
+export function getPointsLabel(score: number): string {
+  return Math.abs(score) === 1 ? 'pto' : 'pts';
+}

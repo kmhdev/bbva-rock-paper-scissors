@@ -37,6 +37,7 @@ function seedSession(partial?: Partial<ReturnType<typeof useGameStore.getState>>
     machineThinking: false,
     playerHistory: [],
     machineHistory: [],
+    ownedOnlineNames: [],
     ...partial,
   });
 }

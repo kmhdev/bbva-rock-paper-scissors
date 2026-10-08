@@ -49,6 +49,7 @@ export interface RankingRowProps {
   position: number;
   username: string;
   score: number;
+  isCurrentUser?: boolean;
 }
 
 export interface GoogleSignInButtonProps {
@@ -65,6 +66,12 @@ export interface UserProfile {
   created_at?: string;
 }
 
+export interface ClaimUsernameResult {
+  ok: boolean;
+  profile?: UserProfile;
+  error?: string;
+}
+
 /** Estado de auth con Google vía Supabase (portado de espanografia). */
 export interface SupabaseAuthState {
   user: User | null;
@@ -76,7 +83,7 @@ export interface SupabaseAuthState {
   isLoading: boolean;
   isSigningIn: boolean;
   error: string;
-  claimUsername: (username: string) => Promise<void>;
+  claimUsername: (username: string) => Promise<ClaimUsernameResult | void>;
   signInWithGoogle: () => Promise<void>;
   signOut: () => Promise<void>;
 }
@@ -85,7 +92,9 @@ export interface UsernameSetupProps {
   error: string;
   isSaving: boolean;
   initialUsername?: string;
-  onClaimUsername: (username: string) => Promise<void> | void;
+  onClaimUsername: (
+    username: string,
+  ) => Promise<ClaimUsernameResult | void> | ClaimUsernameResult | void;
   onSignOut?: () => Promise<void> | void;
   description?: string;
   submitTitle?: string;

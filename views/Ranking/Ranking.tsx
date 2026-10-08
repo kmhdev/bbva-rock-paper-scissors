@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Text, View } from 'react-native';
 import AppButton from '../../components/AppButton/AppButton';
 import GoogleSignInButton from '../../components/GoogleSignInButton/GoogleSignInButton';
@@ -15,11 +15,13 @@ import {
   mergeScores,
   submitOnlineScore,
 } from '../../services/supabaseScoreStorage';
+import { ScoreService } from '../../services/scoreService';
 import { getScoreService, useGameStore } from '../../store/appStore';
 import type { PlayerScore } from '../../types/types';
 import {
   getAuthenticatedLocalScore,
   getLocalCurrentScore,
+  isLocalCurrentUser,
   shouldShowClaim,
   shouldSubmitOnlineScore,
 } from './Ranking.helpers';
@@ -70,6 +72,59 @@ export default function RankingView() {
 
   const showClaim = shouldShowClaim(localCurrent, auth.isConfigured, isAuthenticatedWithProfile);
 
+  // El nombre local ya se cotejó contra el online al empezar a jugar:
+  // tras el login se reclama solo, sin pedir otro nombre. El formulario
+  // manual solo queda como fallback (p. ej. si entretanto lo ocuparon).
+  // Si el reclamado difiere del local, se mueve su mejor marca local al
+  // nombre reclamado para no duplicar usuarios ni perder puntos.
+  const claimSuggestion = playerName ?? lastUsername ?? '';
+  const handleClaimUsername = useCallback(
+    async (username: string) => {
+      const localName = useGameStore.getState().playerName ?? useGameStore.getState().lastUsername;
+      const result = await auth.claimUsername(username);
+      if (!result || !result.ok || !result.profile) return;
+      const claimed = result.profile.username;
+      useGameStore.getState().rememberOwnedOnlineName(claimed);
+      // Solo hay que migrar si el reclamado difiere del local; con el
+      // mismo nombre no hay duplicidad y el efecto de submit ya envía
+      // la marca sin tocar la sesión en curso.
+      if (localName && !ScoreService.isSameUsername(localName, claimed)) {
+        const { score: liveScore } = useGameStore.getState();
+        await getScoreService().transferScore(localName, claimed, liveScore);
+        await useGameStore.getState().registerPlayer(claimed);
+        const local = await getScoreService().getAllScores();
+        setLocalScores(local);
+        setRows(mergeScores(local, await fetchRemoteScores()));
+      }
+    },
+    [auth],
+  );
+
+  const autoClaimName = playerName ?? lastUsername ?? null;
+  const autoClaimAttemptedRef = useRef<string | null>(null);
+  const showAutoClaimPending = auth.requiresUsername && autoClaimName !== null && auth.error === '';
+  useEffect(() => {
+    if (!showAutoClaimPending || auth.isClaimingUsername) return;
+    const attemptKey = `${auth.user?.id ?? ''}:${autoClaimName ?? ''}`;
+    if (autoClaimAttemptedRef.current === attemptKey) return;
+    autoClaimAttemptedRef.current = attemptKey;
+    void handleClaimUsername(autoClaimName ?? '');
+  }, [
+    showAutoClaimPending,
+    auth.isClaimingUsername,
+    auth.user,
+    autoClaimName,
+    handleClaimUsername,
+  ]);
+
+  useEffect(() => {
+    if (isAuthenticatedWithProfile && auth.profile) {
+      // El perfil visto es propio: se recuerda para poder seguir en
+      // local con el mismo nombre tras cerrar sesión.
+      useGameStore.getState().rememberOwnedOnlineName(auth.profile.username);
+    }
+  }, [isAuthenticatedWithProfile, auth.profile]);
+
   useEffect(() => {
     if (
       isAuthenticatedWithProfile &&
@@ -95,15 +150,6 @@ export default function RankingView() {
           <Text style={styles.rankingLoading}>Cargando puntuaciones…</Text>
         ) : (
           <>
-            {localCurrent !== null && (
-              <View style={styles.currentScoreBox} testID="current-score">
-                <Text style={styles.currentScoreTitle}>Tu puntuación actual</Text>
-                <Text style={styles.currentScoreLine}>
-                  {localCurrent.username}: {localCurrent.score}{' '}
-                  {localCurrent.score === 1 ? 'pto' : 'pts'}
-                </Text>
-              </View>
-            )}
             {rows.length === 0 ? (
               <Text style={styles.rankingEmpty}>
                 Aún no hay puntuaciones. ¡Sé la primera persona en jugar!
@@ -116,6 +162,7 @@ export default function RankingView() {
                     position={index + 1}
                     username={entry.username}
                     score={entry.score}
+                    isCurrentUser={isLocalCurrentUser(entry.username, localCurrent?.username)}
                   />
                 ))}
               </View>
@@ -130,11 +177,16 @@ export default function RankingView() {
                     loading={auth.isSigningIn}
                     testID="claim-google-button"
                   />
+                ) : showAutoClaimPending ? (
+                  <Text style={styles.rankingLoading} testID="claim-auto-claim">
+                    Reservando tu nombre @{autoClaimName}…
+                  </Text>
                 ) : (
                   <UsernameSetup
                     error={auth.error}
                     isSaving={auth.isClaimingUsername}
-                    onClaimUsername={auth.claimUsername}
+                    initialUsername={claimSuggestion}
+                    onClaimUsername={handleClaimUsername}
                     onSignOut={auth.signOut}
                   />
                 )}

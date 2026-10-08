@@ -37,6 +37,7 @@ describe('HomeScreen', () => {
       machineThinking: false,
       playerHistory: [],
       machineHistory: [],
+      ownedOnlineNames: [],
     });
   });
 
@@ -111,6 +112,39 @@ describe('HomeScreen', () => {
       expect(useGameStore.getState().lastUsername).toBeNull();
       expect(mockSetScreen).not.toHaveBeenCalledWith('game');
       expect(screen.getByPlaceholderText('Tu nombre')).toBeTruthy();
+    } finally {
+      spy.mockRestore();
+    }
+  });
+
+  it('allows playing locked with your own former online name after logout', async () => {
+    const spy = jest
+      .spyOn(supabaseStorage, 'fetchRemoteScores')
+      .mockResolvedValue([{ username: 'AnaOnline', score: 9 }]);
+    try {
+      useGameStore.setState({ lastUsername: 'AnaOnline', ownedOnlineNames: ['AnaOnline'] });
+      await renderHome();
+      expect(screen.getByText('Hola, AnaOnline 😊')).toBeTruthy();
+      await fireEvent.press(screen.getByLabelText('Empezar a jugar'));
+      await waitFor(() => expect(mockSetScreen).toHaveBeenCalledWith('game'));
+      expect(useGameStore.getState().playerName).toBe('AnaOnline');
+      expect(screen.queryByText(LOCAL_NAME_TAKEN_ONLINE_ERROR)).toBeNull();
+    } finally {
+      spy.mockRestore();
+    }
+  });
+
+  it('allows registering a fresh local name you own after logout', async () => {
+    const spy = jest
+      .spyOn(supabaseStorage, 'fetchRemoteScores')
+      .mockResolvedValue([{ username: 'AnaOnline', score: 9 }]);
+    try {
+      useGameStore.setState({ ownedOnlineNames: ['AnaOnline'] });
+      await renderHome();
+      await fireEvent.changeText(screen.getByPlaceholderText('Tu nombre'), 'anaonline');
+      await fireEvent.press(screen.getByLabelText('Empezar a jugar'));
+      await waitFor(() => expect(mockSetScreen).toHaveBeenCalledWith('game'));
+      expect(useGameStore.getState().playerName).toBe('anaonline');
     } finally {
       spy.mockRestore();
     }

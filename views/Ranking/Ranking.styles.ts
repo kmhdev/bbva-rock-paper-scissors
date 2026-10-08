@@ -37,28 +37,6 @@ export const getStyles = (theme: ThemeColors) => {
       fontSize: 16,
       textAlign: 'center',
     },
-    currentScoreBox: {
-      width: '100%',
-      maxWidth: WEB_CONTENT_MAX_WIDTH,
-      alignSelf: 'center',
-      marginHorizontal: 'auto',
-      padding: 12,
-      borderRadius: 12,
-      borderWidth: 1,
-      borderColor: theme.accent,
-      gap: 4,
-    },
-    currentScoreTitle: {
-      color: theme.text,
-      fontSize: 16,
-      fontWeight: '700',
-      textAlign: 'center',
-    },
-    currentScoreLine: {
-      color: theme.textMuted,
-      fontSize: 16,
-      textAlign: 'center',
-    },
     claimBox: {
       width: '100%',
       maxWidth: WEB_CONTENT_MAX_WIDTH,

@@ -1,7 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import type { User } from '@supabase/supabase-js';
 import type { PlayerScore } from '../../types/types';
-import { getGoogleNameSuggestion, isUsernameTakenOnline } from './Home.helpers';
+import {
+  getGoogleNameSuggestion,
+  isUsernameTakenOnline,
+  resolveOwnOnlineName,
+} from './Home.helpers';
 
 function makeUser(overrides: Partial<User> = {}): User {
   return {
@@ -69,5 +73,24 @@ describe('isUsernameTakenOnline', () => {
 
   it('returns false for empty candidates', () => {
     expect(isUsernameTakenOnline('   ', remote)).toBe(false);
+  });
+});
+
+describe('resolveOwnOnlineName', () => {
+  it('finds the owned name ignoring case and spaces', () => {
+    expect(resolveOwnOnlineName(['AnaOnline'], 'anaonline')).toBe('AnaOnline');
+    expect(resolveOwnOnlineName(['AnaOnline'], '  ANAONLINE  ')).toBe('AnaOnline');
+  });
+
+  it('returns null when nobody owns the candidate', () => {
+    expect(resolveOwnOnlineName(['AnaOnline'], 'Zoe')).toBeNull();
+    expect(resolveOwnOnlineName([], 'AnaOnline')).toBeNull();
+  });
+
+  it('tolerates missing or tampered lists and blank candidates', () => {
+    expect(resolveOwnOnlineName(null, 'AnaOnline')).toBeNull();
+    expect(resolveOwnOnlineName(undefined, 'AnaOnline')).toBeNull();
+    expect(resolveOwnOnlineName('tampered' as unknown as string[], 'AnaOnline')).toBeNull();
+    expect(resolveOwnOnlineName(['AnaOnline'], '   ')).toBeNull();
   });
 });

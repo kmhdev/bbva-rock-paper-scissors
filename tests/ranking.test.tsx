@@ -1,5 +1,5 @@
 import { describe, expect, it, jest, beforeEach, afterEach } from '@jest/globals';
-import { fireEvent, render, screen } from '@testing-library/react-native';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { User } from '@supabase/supabase-js';
 import type { ReactNode } from 'react';
@@ -56,7 +56,7 @@ describe('RankingScreen', () => {
     mockSubmit.mockClear();
     jest.restoreAllMocks();
     await AsyncStorage.clear();
-    useGameStore.setState({ playerName: null, lastUsername: null, score: 0 });
+    useGameStore.setState({ playerName: null, lastUsername: null, score: 0, ownedOnlineNames: [] });
   });
 
   afterEach(() => {
@@ -76,9 +76,9 @@ describe('RankingScreen', () => {
     await scores.saveScore('Ana', 5);
     useGameStore.setState({ playerName: 'Ana' });
     await renderRanking();
-    expect(await screen.findByText('Ana')).toBeTruthy();
+    expect(await screen.findByText('Ana (tú)')).toBeTruthy();
     expect(screen.getByText('Bob')).toBeTruthy();
-    const pointCells = screen.getAllByText(/^(1 pto|[0-9]+ pts)$/);
+    const pointCells = screen.getAllByText(/^(-?1 pto|-?[0-9]+ pts)$/);
     expect(pointCells.map((cell) => cell.children.join(''))).toEqual(['5 pts', '2 pts']);
     expect(screen.getByText('Volver')).toBeTruthy();
   });
@@ -88,7 +88,7 @@ describe('RankingScreen', () => {
     await scores.saveScore('Ana', 5);
     useGameStore.setState({ playerName: 'Ana' });
     await renderRanking();
-    expect(await screen.findByText('Ana')).toBeTruthy();
+    expect(await screen.findByText('Ana (tú)')).toBeTruthy();
     expect(screen.getByText('5 pts')).toBeTruthy();
     expect(screen.queryByText('Local')).toBeNull();
     expect(screen.queryByText('Online')).toBeNull();
@@ -108,15 +108,14 @@ describe('RankingScreen', () => {
     expect(mockSetScreen).toHaveBeenCalledWith('home');
   });
 
-  it('shows the current local score besides the merged leaderboard', async () => {
+  it('marks the local user with (tú) in the leaderboard without a separate box', async () => {
     const scores = getScoreService();
     await scores.saveScore('Ana', 5);
     useGameStore.setState({ playerName: 'Ana', lastUsername: 'Ana', score: 5 });
     await renderRanking();
-    expect(await screen.findByTestId('current-score')).toBeTruthy();
-    expect(screen.getByText('Tu puntuación actual')).toBeTruthy();
-    expect(screen.getByText('Ana: 5 pts')).toBeTruthy();
-    expect(screen.getByText('Ana')).toBeTruthy();
+    expect(await screen.findByText('Ana (tú)')).toBeTruthy();
+    expect(screen.queryByTestId('current-score')).toBeNull();
+    expect(screen.queryByText('Tu puntuación actual')).toBeNull();
   });
 
   it('shows the claim CTA when configured but anonymous', async () => {
@@ -142,8 +141,49 @@ describe('RankingScreen', () => {
     await scores.saveScore('Ana', 5);
     useGameStore.setState({ playerName: 'Ana', lastUsername: 'Ana', score: 5 });
     await renderRanking();
-    expect(await screen.findByTestId('current-score')).toBeTruthy();
+    expect(await screen.findByText('Ana (tú)')).toBeTruthy();
     expect(screen.queryByTestId('claim-score-box')).toBeNull();
     expect(mockSubmit).toHaveBeenCalledWith(5);
+  });
+
+  it('auto-claims the local name after login instead of asking for a new one', async () => {
+    const claimUsername = jest.fn(() =>
+      Promise.resolve({ ok: true, profile: { user_id: 'user-1', username: 'Pepe' } }),
+    );
+    jest.spyOn(authHook, 'useSupabaseAuth').mockReturnValue(
+      makeAuth({
+        isConfigured: true,
+        user: { id: 'user-1' } as User,
+        requiresUsername: true,
+        claimUsername,
+      }),
+    );
+    const scores = getScoreService();
+    await scores.saveScore('Pepe', 5);
+    useGameStore.setState({ playerName: 'Pepe', lastUsername: 'Pepe', score: 5 });
+    await renderRanking();
+    expect(await screen.findByTestId('claim-auto-claim')).toBeTruthy();
+    await waitFor(() => expect(claimUsername).toHaveBeenCalledWith('Pepe'));
+    expect(screen.queryByLabelText('Nombre de usuario online')).toBeNull();
+  });
+
+  it('falls back to the manual form when the local name is taken online', async () => {
+    const claimUsername = jest.fn(() =>
+      Promise.resolve({ ok: false, error: 'Ese nombre ya está en uso. Prueba con otro.' }),
+    );
+    jest.spyOn(authHook, 'useSupabaseAuth').mockReturnValue(
+      makeAuth({
+        isConfigured: true,
+        user: { id: 'user-1' } as User,
+        requiresUsername: true,
+        error: 'Ese nombre ya está en uso. Prueba con otro.',
+        claimUsername,
+      }),
+    );
+    const scores = getScoreService();
+    await scores.saveScore('Pepe', 5);
+    useGameStore.setState({ playerName: 'Pepe', lastUsername: 'Pepe', score: 5 });
+    await renderRanking();
+    expect(await screen.findByDisplayValue('Pepe')).toBeTruthy();
   });
 });

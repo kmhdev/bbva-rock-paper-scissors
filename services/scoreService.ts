@@ -87,6 +87,40 @@ export class ScoreService {
     }
   }
 
+  /** Elimina la entrada local de un jugador (normalizada, insensible a mayúsculas). */
+  async removeScore(username: string): Promise<void> {
+    const key = ScoreService.normalizeUsername(username);
+    if (key === '') return;
+    const scores = await this.readAll();
+    if (key in scores) {
+      delete scores[key];
+      await this.writeAll(scores);
+    }
+  }
+
+  /**
+   * Mueve la mejor marca local de `fromUsername` a `toUsername`.
+   * Si son el mismo nombre (insensible a mayúsculas) no toca nada y
+   * devuelve la marca actual. Si son distintos, guarda en el destino
+   * el máximo entre ambas marcas (más `liveScore`) y borra el origen
+   * para no duplicar usuarios ("nombre1" vs "nombre2").
+   */
+  async transferScore(
+    fromUsername: string,
+    toUsername: string,
+    liveScore?: number,
+  ): Promise<number> {
+    if (ScoreService.isSameUsername(fromUsername, toUsername)) {
+      return this.getScore(toUsername);
+    }
+    const from = await this.getScore(fromUsername);
+    const to = await this.getScore(toUsername);
+    const best = Math.max(from, to, liveScore ?? Number.NEGATIVE_INFINITY);
+    await this.saveScore(toUsername, best);
+    await this.removeScore(fromUsername);
+    return best;
+  }
+
   private async readAll(): Promise<StoredScores> {
     const raw = await this.storage.getItem(this.storageKey);
     if (!raw) return {};
