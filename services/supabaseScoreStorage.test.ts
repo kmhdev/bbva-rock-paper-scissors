@@ -6,8 +6,6 @@ import {
   fetchRemoteScores,
   getSupabaseClient,
   mergeScores,
-  mergeScoresDetailed,
-  pushRemoteScore,
   resetSupabaseClientCache,
   submitOnlineScore,
 } from './supabaseScoreStorage';
@@ -21,16 +19,6 @@ describe('supabaseScoreStorage without configuration', () => {
   it('fetchRemoteScores resolves empty offline', async () => {
     resetSupabaseClientCache();
     await expect(fetchRemoteScores()).resolves.toEqual([]);
-  });
-
-  it('pushRemoteScore is a no-op offline', async () => {
-    resetSupabaseClientCache();
-    await expect(pushRemoteScore('ana', 5)).resolves.toBeUndefined();
-  });
-
-  it('pushRemoteScore without user is a no-op (online requires login)', async () => {
-    resetSupabaseClientCache();
-    await expect(pushRemoteScore('ana', 5, undefined)).resolves.toBeUndefined();
   });
 
   it('fetchProfile resolves null offline', async () => {
@@ -74,30 +62,5 @@ describe('mergeScores', () => {
       { username: 'Bob', score: 5 },
       { username: 'Ana', score: 3 },
     ]);
-  });
-});
-
-describe('mergeScoresDetailed', () => {
-  it('keeps local and remote side by side plus the best', () => {
-    expect(
-      mergeScoresDetailed(
-        [
-          { username: 'Ana', score: 3 },
-          { username: 'Bob', score: 5 },
-        ],
-        [
-          { username: 'ana', score: 7 },
-          { username: 'Zoe', score: 4 },
-        ],
-      ),
-    ).toEqual([
-      { username: 'Ana', localScore: 3, remoteScore: 7, best: 7 },
-      { username: 'Bob', localScore: 5, remoteScore: null, best: 5 },
-      { username: 'Zoe', localScore: null, remoteScore: 4, best: 4 },
-    ]);
-  });
-
-  it('handles empty inputs', () => {
-    expect(mergeScoresDetailed([], [])).toEqual([]);
   });
 });

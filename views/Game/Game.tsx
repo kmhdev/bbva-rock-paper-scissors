@@ -6,11 +6,10 @@ import SegmentedToggle from '../../components/SegmentedToggle/SegmentedToggle';
 import MainCard from '../../components/MainCard/MainCard';
 import RoundResult from '../../components/RoundResult/RoundResult';
 import ScoreBoard from '../../components/ScoreBoard/ScoreBoard';
-import ThemeToggle from '../../components/ThemeToggle/ThemeToggle';
+import TopBar from '../../components/TopBar/TopBar';
 import { MACHINE_REVEAL_DELAY_MS } from '../../constants/game.constants';
 import { useNavigation } from '../../context/NavigationContext';
 import { useTheme } from '../../context/ThemeContext';
-import { useIsMobilePlatform } from '../../hooks/useIsMobilePlatform';
 import { useSupabaseAuth } from '../../hooks/useSupabaseAuth';
 import { getChoicesForMode } from '../../services/gameLogicService';
 import { randomMachineStrategy, smartMachineStrategy } from '../../services/machineStrategies';
@@ -36,7 +35,6 @@ const HARD_MODE_OPTIONS: ReadonlyArray<SegmentedToggleOption<HardModeValue>> = [
 export default function GameView() {
   const { setScreen } = useNavigation();
   const { theme } = useTheme();
-  const isMobile = useIsMobilePlatform();
   const styles = getStyles(theme);
   const playerName = useGameStore((state) => state.playerName);
   const score = useGameStore((state) => state.score);
@@ -131,11 +129,7 @@ export default function GameView() {
 
   return (
     <View style={styles.gameScreen}>
-      {!isMobile && (
-        <View style={styles.topBar}>
-          <ThemeToggle />
-        </View>
-      )}
+      <TopBar />
       <MainCard>
         <ScoreBoard score={score} />
         <RoundResult

@@ -10,6 +10,7 @@ module.exports = {
     '!**/*.test.tsx',
     '!**/*.styles.ts',
     '!app/+not-found.tsx',
+    '!app/index.tsx',
   ],
   coverageThreshold: {
     global: {

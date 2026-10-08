@@ -1,5 +1,5 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
-import type { ClaimUsernameResult, MergedScoreRow, PlayerScore, UserProfile } from '../types/types';
+import type { ClaimUsernameResult, PlayerScore, UserProfile } from '../types/types';
 import { ScoreService } from './scoreService';
 
 const PLAYERS_TABLE = 'players';
@@ -30,11 +30,6 @@ export function resetSupabaseClientCache(): void {
   cachedClient = undefined;
 }
 
-/** True cuando hay URL + anon key configuradas (web y nativo). */
-export function isSupabaseConfigured(): boolean {
-  return getSupabaseClient() !== null;
-}
-
 export async function fetchRemoteScores(): Promise<PlayerScore[]> {
   const client = getSupabaseClient();
   if (!client) return [];
@@ -60,8 +55,6 @@ export async function fetchProfile(userId: string): Promise<UserProfile | null> 
   if (error || !data) return null;
   return data as UserProfile;
 }
-
-export type { ClaimUsernameResult };
 
 /**
  * Reclama el nombre público una sola vez (inmutable, único
@@ -109,21 +102,6 @@ export async function submitOnlineScore(score: number): Promise<void> {
   if (error) return;
 }
 
-/**
- * @deprecated El ranking online exige login + nombre reclamado; sin
- * sesión es no-op y con sesión el servidor ignora `username`.
- * Usa submitOnlineScore() en código nuevo.
- */
-export async function pushRemoteScore(
-  username: string,
-  score: number,
-  userId?: string,
-): Promise<void> {
-  if (!ScoreService.isValidUsername(username)) return;
-  if (!userId) return;
-  await submitOnlineScore(score);
-}
-
 /** Merges local and remote scores keeping the best score per player. */
 export function mergeScores(local: PlayerScore[], remote: PlayerScore[]): PlayerScore[] {
   const bestByPlayer = new Map<string, PlayerScore>();
@@ -137,45 +115,4 @@ export function mergeScores(local: PlayerScore[], remote: PlayerScore[]): Player
   return [...bestByPlayer.values()].sort(
     (a, b) => b.score - a.score || a.username.localeCompare(b.username),
   );
-}
-
-/**
- * Comparativa local vs online por jugador: conserva cada origen por
- * separado para pintarlo en columnas, más la mejor marca (`best`).
- * Orden: mejor marca desc, desempate alfabético (igual que el ranking).
- */
-export function mergeScoresDetailed(local: PlayerScore[], remote: PlayerScore[]): MergedScoreRow[] {
-  const localBest = new Map<string, PlayerScore>();
-  for (const entry of local) {
-    const key = ScoreService.normalizeUsername(entry.username);
-    const current = localBest.get(key);
-    if (!current || entry.score > current.score) {
-      localBest.set(key, entry);
-    }
-  }
-  const remoteBest = new Map<string, PlayerScore>();
-  for (const entry of remote) {
-    const key = ScoreService.normalizeUsername(entry.username);
-    const current = remoteBest.get(key);
-    if (!current || entry.score > current.score) {
-      remoteBest.set(key, entry);
-    }
-  }
-  const rows: MergedScoreRow[] = [];
-  for (const key of new Set([...localBest.keys(), ...remoteBest.keys()])) {
-    const localEntry = localBest.get(key);
-    const remoteEntry = remoteBest.get(key);
-    const localScore = localEntry?.score ?? null;
-    const remoteScore = remoteEntry?.score ?? null;
-    rows.push({
-      username: localEntry?.username ?? remoteEntry?.username ?? key,
-      localScore,
-      remoteScore,
-      best: Math.max(
-        localScore ?? Number.NEGATIVE_INFINITY,
-        remoteScore ?? Number.NEGATIVE_INFINITY,
-      ),
-    });
-  }
-  return rows.sort((a, b) => b.best - a.best || a.username.localeCompare(b.username));
 }

@@ -6,8 +6,7 @@ import GoogleSignInButton from '../../components/GoogleSignInButton/GoogleSignIn
 import SegmentedToggle from '../../components/SegmentedToggle/SegmentedToggle';
 import UsernameSetup from '../../components/UsernameSetup/UsernameSetup';
 import MainCard from '../../components/MainCard/MainCard';
-import ThemeToggle from '../../components/ThemeToggle/ThemeToggle';
-import { useIsMobilePlatform } from '../../hooks/useIsMobilePlatform';
+import TopBar from '../../components/TopBar/TopBar';
 import { useSupabaseAuth } from '../../hooks/useSupabaseAuth';
 import { useGameStore, getScoreService } from '../../store/appStore';
 import { useNavigation } from '../../context/NavigationContext';
@@ -38,7 +37,6 @@ const MODE_OPTIONS: ReadonlyArray<SegmentedToggleOption<GameMode>> = [
 export default function HomeView() {
   const { setScreen } = useNavigation();
   const { theme } = useTheme();
-  const isMobile = useIsMobilePlatform();
   const styles = getStyles(theme);
   const playerName = useGameStore((state) => state.playerName);
   const lastUsername = useGameStore((state) => state.lastUsername);
@@ -168,11 +166,7 @@ export default function HomeView() {
   if (auth.requiresUsername) {
     return (
       <View style={styles.homeScreen}>
-        {!isMobile && (
-          <View style={styles.topBar}>
-            <ThemeToggle />
-          </View>
-        )}
+        <TopBar />
         <View style={styles.heroLogo}>
           <AppLogo size={112} />
         </View>
@@ -230,11 +224,7 @@ export default function HomeView() {
   if (lockedName === null) {
     return (
       <View style={styles.homeScreen}>
-        {!isMobile && (
-          <View style={styles.topBar}>
-            <ThemeToggle />
-          </View>
-        )}
+        <TopBar />
         <View style={styles.heroLogo}>
           <AppLogo size={112} />
         </View>
@@ -271,11 +261,7 @@ export default function HomeView() {
 
   return (
     <View style={styles.homeScreen}>
-      {!isMobile && (
-        <View style={styles.topBar}>
-          <ThemeToggle />
-        </View>
-      )}
+      <TopBar />
       <View style={styles.heroLogo}>
         <AppLogo size={112} />
       </View>

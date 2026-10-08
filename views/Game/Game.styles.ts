@@ -12,14 +12,6 @@ export const getStyles = (theme: ThemeColors) => {
       justifyContent: 'center',
       gap: 16,
     },
-    topBar: {
-      position: 'absolute',
-      top: 24,
-      right: 24,
-      zIndex: 10,
-      flexDirection: 'row',
-      justifyContent: 'flex-end',
-    },
     choicesRow: {
       flexDirection: 'row',
       width: '100%',

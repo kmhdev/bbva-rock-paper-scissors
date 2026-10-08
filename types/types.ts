@@ -34,17 +34,6 @@ export interface PlayerScore {
   score: number;
 }
 
-/**
- * Comparativa local vs online por jugador para el ranking.
- * `null` significa que ese origen no tiene marca registrada.
- */
-export interface MergedScoreRow {
-  username: string;
-  localScore: number | null;
-  remoteScore: number | null;
-  best: number;
-}
-
 export interface RankingRowProps {
   position: number;
   username: string;

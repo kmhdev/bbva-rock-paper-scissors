@@ -4,11 +4,10 @@ import AppButton from '../../components/AppButton/AppButton';
 import GoogleSignInButton from '../../components/GoogleSignInButton/GoogleSignInButton';
 import MainCard from '../../components/MainCard/MainCard';
 import RankingRow from '../../components/RankingRow/RankingRow';
-import ThemeToggle from '../../components/ThemeToggle/ThemeToggle';
+import TopBar from '../../components/TopBar/TopBar';
 import UsernameSetup from '../../components/UsernameSetup/UsernameSetup';
 import { useNavigation } from '../../context/NavigationContext';
 import { useTheme } from '../../context/ThemeContext';
-import { useIsMobilePlatform } from '../../hooks/useIsMobilePlatform';
 import { useSupabaseAuth } from '../../hooks/useSupabaseAuth';
 import {
   fetchRemoteScores,
@@ -31,7 +30,6 @@ import { getStyles } from './Ranking.styles';
 export default function RankingView() {
   const { setScreen } = useNavigation();
   const { theme } = useTheme();
-  const isMobile = useIsMobilePlatform();
   const styles = getStyles(theme);
   const playerName = useGameStore((state) => state.playerName);
   const lastUsername = useGameStore((state) => state.lastUsername);
@@ -137,11 +135,7 @@ export default function RankingView() {
 
   return (
     <View style={styles.rankingScreen}>
-      {!isMobile && (
-        <View style={styles.topBar}>
-          <ThemeToggle />
-        </View>
-      )}
+      <TopBar />
       <MainCard>
         <Text testID="ranking-title" style={styles.rankingTitle}>
           Ranking
