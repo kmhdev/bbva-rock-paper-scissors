@@ -56,11 +56,3 @@ npm run lint
 npm test
 npm run build:web  # genera la carpeta dist/
 ```
-
-## Sección BONUS Fun fact
-
-Hace cuatro años ya hice esta prueba 😄
-Para comparar el progreso dejo los enlaces:
-
-- **Repo**: https://github.com/kmhdev/bbva-rock-paper-scissors-old
-- **App desplegada**: https://bbva-rock-paper-scissors-old.vercel.app/
