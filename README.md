@@ -2,12 +2,12 @@
 
 Juego de piedra, papel o tijera contra la máquina. Funciona en el móvil y en el navegador, incluso sin internet.
 
-Reto original: https://bbvaengineering.github.io/challenges/rock-paper-scissors/
-Código: https://github.com/kmhdev/bbva-rock-paper-scissors
+**Reto original:**https://bbvaengineering.github.io/challenges/rock-paper-scissors/
+**Código:**https://github.com/kmhdev/bbva-rock-paper-scissors
 
 UI/UX inspirada en proyectos personales, algunos componentes han sido reutilizados.
-Quinielazo: https://quiniela-native.vercel.app/
-SpainXplorer: https://spainxplorer.vercel.app/
+**Quinielazo**: https://quiniela-native.vercel.app/
+**SpainXplorer**: https://spainxplorer.vercel.app/
 
 ## Cómo se juega
 
@@ -28,8 +28,7 @@ Si cierras la app y vuelves, sigues donde estabas. Si repites un nombre, retomas
 
 ## Stack y apuntes técnicos
 
-    una sola app que funciona en móvil y en navegador, pudiendo incluso desplegar a las tiendas de Apple y Google.
-
+- **React Native + Expo:** una sola app que funciona en móvil y en navegador, pudiendo incluso desplegar a las tiendas de Apple y Google.
 - **TypeScript:** es JavaScript con etiquetas que dicen qué es cada dato (texto, número, etc.). Como dev lo uso porque me avisa de errores antes de probar la app y me ayuda a cambiar código sin romper nada.
 - **Supabase:** guarda el ranking online cuando hay internet.
 - **En el móvil:** guarda tus puntos aunque no tengas conexión.
