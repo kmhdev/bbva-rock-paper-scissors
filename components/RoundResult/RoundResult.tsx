@@ -1,8 +1,14 @@
 import { Text, View } from 'react-native';
-import { CHOICE_META } from '../../constants/game.constants';
 import { useTheme } from '../../context/ThemeContext';
 import type { Choice, RoundOutcome } from '../../types/types';
-import { getStyles } from './RoundResult.styles';
+import {
+  formatMachinePick,
+  formatPlayerPick,
+  getOutcomeMessage,
+  isThinkingPlaceholder,
+  shouldShowOutcome,
+} from './RoundResult.helpers';
+import { getStyles, resolveOutcomeStyle } from './RoundResult.styles';
 
 interface RoundResultProps {
   playerPick: Choice | null;
@@ -10,12 +16,6 @@ interface RoundResultProps {
   thinking: boolean;
   outcome: RoundOutcome | null;
 }
-
-const OUTCOME_MESSAGE: Record<RoundOutcome, string> = {
-  win: '¡Has ganado! +1 punto',
-  lose: 'Has perdido -1 punto',
-  draw: 'Empate',
-};
 
 /** Muestra la jugada del jugador, la de la máquina (tras su retardo) y el veredicto. */
 export default function RoundResult({
@@ -35,27 +35,18 @@ export default function RoundResult({
     );
   }
 
-  const outcomeStyle =
-    outcome === 'win'
-      ? styles.outcomeWin
-      : outcome === 'lose'
-        ? styles.outcomeLose
-        : styles.outcomeDraw;
+  const outcomeStyle = resolveOutcomeStyle(styles, outcome);
 
   return (
     <View style={styles.roundResult}>
-      <Text style={styles.picks}>
-        Tú: {CHOICE_META[playerPick].emoji} {CHOICE_META[playerPick].label}
-      </Text>
-      {thinking || machinePick === null ? (
+      <Text style={styles.picks}>{formatPlayerPick(playerPick)}</Text>
+      {isThinkingPlaceholder(thinking, machinePick) ? (
         <Text style={styles.thinking}>La máquina está pensando…</Text>
       ) : (
-        <Text style={styles.picks}>
-          Máquina: {CHOICE_META[machinePick].emoji} {CHOICE_META[machinePick].label}
-        </Text>
+        machinePick !== null && <Text style={styles.picks}>{formatMachinePick(machinePick)}</Text>
       )}
-      {!thinking && outcome !== null && (
-        <Text style={outcomeStyle}>{OUTCOME_MESSAGE[outcome]}</Text>
+      {shouldShowOutcome(thinking, outcome) && outcome !== null && (
+        <Text style={outcomeStyle}>{getOutcomeMessage(outcome)}</Text>
       )}
     </View>
   );

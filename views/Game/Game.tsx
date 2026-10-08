@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 import { View } from 'react-native';
 import AppButton from '../../components/AppButton/AppButton';
 import ChoiceButton from '../../components/ChoiceButton/ChoiceButton';
@@ -7,25 +7,13 @@ import MainCard from '../../components/MainCard/MainCard';
 import RoundResult from '../../components/RoundResult/RoundResult';
 import ScoreBoard from '../../components/ScoreBoard/ScoreBoard';
 import TopBar from '../../components/TopBar/TopBar';
-import { MACHINE_REVEAL_DELAY_MS } from '../../constants/game.constants';
 import { useNavigation } from '../../context/NavigationContext';
 import { useTheme } from '../../context/ThemeContext';
 import { useSupabaseAuth } from '../../hooks/useSupabaseAuth';
 import { getChoicesForMode } from '../../services/gameLogicService';
-import { randomMachineStrategy, smartMachineStrategy } from '../../services/machineStrategies';
-import { ScoreService } from '../../services/scoreService';
-import { submitOnlineScore } from '../../services/supabaseScoreStorage';
 import { useGameStore } from '../../store/appStore';
-import type { Choice, SegmentedToggleOption } from '../../types/types';
-import { vibrateOnLoss } from '../../utils/vibration';
-import { getStyles } from './Game.styles';
-
-type HardModeValue = 'off' | 'on';
-
-const HARD_MODE_OPTIONS: ReadonlyArray<SegmentedToggleOption<HardModeValue>> = [
-  { value: 'off', label: 'OFF', accessibilityLabel: 'Desactivar máquina inteligente' },
-  { value: 'on', label: 'ON', accessibilityLabel: 'Activar máquina inteligente' },
-];
+import { HARD_MODE_OPTIONS, shouldForceExitToHome, useGameRound } from './Game.helpers';
+import { getStyles, resolveChoicesRowStyle } from './Game.styles';
 
 /**
  * Vista Game: intencionadamente fina. Inyecta el servicio A (puntos, vía el
@@ -45,17 +33,13 @@ export default function GameView() {
   const outcome = useGameStore((state) => state.outcome);
   const machineThinking = useGameStore((state) => state.machineThinking);
   const auth = useSupabaseAuth();
-  const revealTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const claimedUsername = auth.profile?.username ?? null;
   const hasOnlineIdentity = auth.user !== null && auth.profile !== null && !auth.requiresUsername;
-
-  useEffect(() => {
-    return () => {
-      if (revealTimer.current !== null) {
-        clearTimeout(revealTimer.current);
-      }
-    };
-  }, []);
+  const { handlePick, handleExit } = useGameRound({
+    hasOnlineIdentity,
+    claimedUsername,
+    onExit: () => setScreen('home'),
+  });
 
   useEffect(() => {
     if (playerName === null) {
@@ -66,12 +50,7 @@ export default function GameView() {
   // Nombre de usuario único: con perfil reclamado no se puede jugar como otro
   // nombre local ("x"); la marca de "x" nunca debe enviarse como "y".
   useEffect(() => {
-    if (
-      hasOnlineIdentity &&
-      claimedUsername !== null &&
-      playerName !== null &&
-      !ScoreService.isSameUsername(playerName, claimedUsername)
-    ) {
+    if (shouldForceExitToHome(hasOnlineIdentity, claimedUsername, playerName)) {
       useGameStore.getState().exitToHome();
       setScreen('home');
     }
@@ -83,61 +62,8 @@ export default function GameView() {
 
   const choices = getChoicesForMode(gameMode);
 
-  const clearRevealTimer = () => {
-    if (revealTimer.current !== null) {
-      clearTimeout(revealTimer.current);
-      revealTimer.current = null;
-    }
-  };
-
-  // Efectos tras resolver la ronda: vibración al perder y envío online al ganar.
-  const settleRoundSideEffects = () => {
-    const settled = useGameStore.getState();
-    if (settled.outcome === 'lose') {
-      void vibrateOnLoss();
-    }
-    if (settled.outcome === 'win' && settled.playerName !== null) {
-      // El servidor resuelve el nombre desde el perfil reclamado;
-      // sin login, sin perfil o jugando como otro nombre local ("x"
-      // vs perfil "y") la marca queda solo en local.
-      if (
-        hasOnlineIdentity &&
-        claimedUsername !== null &&
-        ScoreService.isSameUsername(settled.playerName, claimedUsername)
-      ) {
-        void submitOnlineScore(settled.score);
-      }
-    }
-  };
-
-  // Turno de la máquina: elige estrategia, resuelve la ronda y asienta efectos.
-  const revealMachineMove = () => {
-    const latest = useGameStore.getState();
-    const strategy = latest.smartMachine ? smartMachineStrategy : randomMachineStrategy;
-    const machineChoice = strategy.pickMove({
-      playerHistory: latest.playerHistory,
-      machineHistory: latest.machineHistory,
-      availableChoices: getChoicesForMode(latest.gameMode),
-    });
-    void latest.resolveRound(machineChoice).then(settleRoundSideEffects);
-  };
-
-  const handlePick = (pick: Choice) => {
-    const store = useGameStore.getState();
-    if (store.machineThinking) return;
-    store.startRound(pick);
-    clearRevealTimer();
-    revealTimer.current = setTimeout(revealMachineMove, MACHINE_REVEAL_DELAY_MS);
-  };
-
-  const handleExit = () => {
-    clearRevealTimer();
-    useGameStore.getState().exitToHome();
-    setScreen('home');
-  };
-
   const renderChoicesRow = () => (
-    <View style={choices.length > 3 ? styles.choicesRowWrapped : styles.choicesRow}>
+    <View style={resolveChoicesRowStyle(styles, choices.length)}>
       {choices.map((choice) => (
         <ChoiceButton
           key={choice}

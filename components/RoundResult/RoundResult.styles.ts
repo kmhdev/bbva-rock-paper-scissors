@@ -1,6 +1,6 @@
 import { StyleSheet } from 'react-native';
 import { WEB_CONTENT_MAX_WIDTH } from '../../constants/layout.constants';
-import type { ThemeColors } from '../../types/types';
+import type { RoundOutcome, ThemeColors } from '../../types/types';
 
 export const getStyles = (theme: ThemeColors) => {
   return StyleSheet.create({
@@ -42,3 +42,12 @@ export const getStyles = (theme: ThemeColors) => {
     },
   });
 };
+
+type RoundResultStyles = ReturnType<typeof getStyles>;
+
+/** Estilo del veredicto según el resultado de la ronda. */
+export function resolveOutcomeStyle(styles: RoundResultStyles, outcome: RoundOutcome | null) {
+  if (outcome === 'win') return styles.outcomeWin;
+  if (outcome === 'lose') return styles.outcomeLose;
+  return styles.outcomeDraw;
+}

@@ -31,3 +31,12 @@ export const getStyles = (theme: ThemeColors) => {
     },
   });
 };
+
+type GameStyles = ReturnType<typeof getStyles>;
+
+/**
+ * Fila de jugadas: envuelta cuando hay más de 3 opciones (modo extendido).
+ */
+export function resolveChoicesRowStyle(styles: GameStyles, choicesCount: number) {
+  return choicesCount > 3 ? styles.choicesRowWrapped : styles.choicesRow;
+}
