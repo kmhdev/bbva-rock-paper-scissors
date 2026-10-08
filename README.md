@@ -28,7 +28,8 @@ Si cierras la app y vuelves, sigues donde estabas. Si repites un nombre, retomas
 
 ## Stack y apuntes técnicos
 
-- **Expo + React Native:** una sola app que funciona en móvil y en navegador, pudiendo incluso desplegar a las tiendas de Apple y Google.
+    una sola app que funciona en móvil y en navegador, pudiendo incluso desplegar a las tiendas de Apple y Google.
+
 - **TypeScript:** es JavaScript con etiquetas que dicen qué es cada dato (texto, número, etc.). Como dev lo uso porque me avisa de errores antes de probar la app y me ayuda a cambiar código sin romper nada.
 - **Supabase:** guarda el ranking online cuando hay internet.
 - **En el móvil:** guarda tus puntos aunque no tengas conexión.
@@ -60,5 +61,5 @@ npm run build:web  # genera la carpeta dist/
 Hace cuatro años ya hice esta prueba 😄
 Para comparar el progreso dejo los enlaces:
 
-Repo: https://github.com/kmhdev/bbva-rock-paper-scissors-old
-App: https://bbva-rock-paper-scissors-old.vercel.app/
+- **Repo:** : https://github.com/kmhdev/bbva-rock-paper-scissors-old
+- **App desplegada**: https://bbva-rock-paper-scissors-old.vercel.app/
