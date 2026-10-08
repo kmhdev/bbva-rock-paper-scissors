@@ -42,10 +42,24 @@ export function isUsernameTakenOnline(
 ): boolean {
   const normalized = ScoreService.normalizeUsername(candidate);
   if (normalized === '') return false;
-  if (ownOnlineName !== null && ScoreService.normalizeUsername(ownOnlineName) === normalized) {
+  if (ownOnlineName !== null && ScoreService.isSameUsername(ownOnlineName, candidate)) {
     return false;
   }
   return remoteScores.some(
     (entry) => ScoreService.normalizeUsername(entry.username) === normalized,
   );
+}
+
+/**
+ * True cuando la sesión local (p. ej. "x") no coincide con el nombre
+ * reclamado online (p. ej. perfil "y"). Sin esta guarda, la marca local
+ * de "x" se enviaría como "y" y el ranking mostraría dos nombres para
+ * el mismo user_id (puntuaciones ficticias).
+ */
+export function needsIdentitySwitch(
+  playerName: string | null,
+  claimedUsername: string | null,
+): boolean {
+  if (playerName === null || claimedUsername === null) return false;
+  return !ScoreService.isSameUsername(playerName, claimedUsername);
 }

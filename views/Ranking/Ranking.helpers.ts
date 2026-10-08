@@ -35,3 +35,39 @@ export function shouldShowClaim(
 ): boolean {
   return localCurrent !== null && isConfigured && !isAuthenticatedWithProfile;
 }
+
+/**
+ * Resuelve la marca local atribuible a la identidad online. Cuando hay
+ * perfil reclamado, la marca viva del store solo cuenta si playerName
+ * coincide con el perfil; si se jugaba como local "x" y el perfil es
+ * "y", la marca de "x" nunca debe reclamarse como "y".
+ * Null si no hay marca del nombre reclamado.
+ */
+export function getAuthenticatedLocalScore(
+  claimedUsername: string,
+  playerName: string | null,
+  storeScore: number,
+  localScores: PlayerScore[],
+): PlayerScore | null {
+  const saved = localScores.find((entry) =>
+    ScoreService.isSameUsername(entry.username, claimedUsername),
+  );
+  if (playerName !== null && ScoreService.isSameUsername(playerName, claimedUsername)) {
+    return { username: claimedUsername, score: Math.max(storeScore, saved?.score ?? storeScore) };
+  }
+  if (!saved) return null;
+  return { username: saved.username, score: saved.score };
+}
+
+/**
+ * Solo se envía online cuando el nombre local coincide con el perfil.
+ * Evita atribuir la puntuación de "x" al usuario online "y"
+ * (mismo user_id, distinto display_name).
+ */
+export function shouldSubmitOnlineScore(
+  localCurrent: PlayerScore | null,
+  profileUsername: string | null,
+): boolean {
+  if (localCurrent === null || profileUsername === null) return false;
+  return ScoreService.isSameUsername(localCurrent.username, profileUsername);
+}

@@ -46,7 +46,7 @@ describe('HomeScreen', () => {
     expect(screen.getByPlaceholderText('Tu nombre')).toBeTruthy();
     expect(screen.getByText('Clásico (3)')).toBeTruthy();
     expect(screen.getByText('Lagarto-Spock (5)')).toBeTruthy();
-    expect(screen.getByText('Ver ranking')).toBeTruthy();
+    expect(screen.getByText('Ranking')).toBeTruthy();
   });
 
   it('uses the reusable username setup for the first local name', async () => {
@@ -141,7 +141,7 @@ describe('HomeScreen', () => {
 
   it('navigates to ranking', async () => {
     await renderHome();
-    await fireEvent.press(screen.getByLabelText('Ver ranking'));
+    await fireEvent.press(screen.getByLabelText('Ranking'));
     expect(mockSetScreen).toHaveBeenCalledWith('ranking');
   });
 });

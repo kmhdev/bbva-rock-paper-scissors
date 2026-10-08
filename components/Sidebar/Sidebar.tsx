@@ -6,7 +6,7 @@ import type { Screen } from '../../types/types';
 import { useTheme } from '../../context/ThemeContext';
 import { useIsMobilePlatform } from '../../hooks/useIsMobilePlatform';
 import type { SidebarProps } from '../../types/types';
-import { useSidebarLogic, useThemeFade } from './Sidebar.helpers';
+import { useSidebarAuth, useSidebarLogic, useThemeFade } from './Sidebar.helpers';
 import { getOverlayAnimatedStyle, getThemeFadeStyle } from './Sidebar.styles';
 
 const MENU_ROUTES = [
@@ -22,6 +22,7 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
   const { panResponder, styles, animatedLeft, showOverlay, overlayAnim, handleOverlayClose } =
     useSidebarLogic({ open, onClose, theme });
   const { themeFade, handleThemeChange } = useThemeFade(toggleTheme);
+  const authItem = useSidebarAuth(onClose);
 
   if (!isMobile) return null;
 
@@ -82,6 +83,25 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
                   <Text style={styles.menuText}>{themeLabel}</Text>
                 </Pressable>
               </Animated.View>
+              {authItem.isVisible && (
+                <>
+                  {authItem.error !== '' && (
+                    <Text style={styles.authError} testID="sidebar-auth-error">
+                      {authItem.error}
+                    </Text>
+                  )}
+                  <Pressable
+                    style={styles.menuItem}
+                    accessibilityRole="button"
+                    accessibilityLabel={authItem.accessibilityLabel}
+                    testID={authItem.testID}
+                    onPress={authItem.handleAuthPress}
+                  >
+                    <Ionicons name={authItem.icon} size={30} style={styles.menuIcon} />
+                    <Text style={styles.menuText}>{authItem.label}</Text>
+                  </Pressable>
+                </>
+              )}
             </View>
           </View>
         </SafeAreaView>

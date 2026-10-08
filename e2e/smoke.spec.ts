@@ -20,7 +20,7 @@ test('registers, plays a round and exits', async ({ page }) => {
 
 test('ranking loads from home', async ({ page }) => {
   await page.goto('/');
-  await page.getByText('Ver ranking').click();
+  await page.getByText('Ranking').click();
   await expect(page.getByTestId('ranking-title')).toBeVisible();
 });
 

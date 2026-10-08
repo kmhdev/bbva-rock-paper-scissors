@@ -126,7 +126,7 @@ export interface SegmentedToggleProps<T extends string> {
 
 export type Screen = 'home' | 'game' | 'ranking';
 
-export type AppButtonVariant = 'primary' | 'ghostlight';
+export type AppButtonVariant = 'primary' | 'secondary' | 'ghostlight';
 
 export interface AppButtonProps {
   title: string;

@@ -31,6 +31,13 @@ export class ScoreService {
     return username.trim().toLowerCase();
   }
 
+  static isSameUsername(a: string | null | undefined, b: string | null | undefined): boolean {
+    if (typeof a !== 'string' || typeof b !== 'string') return false;
+    const left = ScoreService.normalizeUsername(a);
+    if (left === '') return false;
+    return left === ScoreService.normalizeUsername(b);
+  }
+
   static isValidUsername(username: string): boolean {
     return username.trim().length >= 2;
   }

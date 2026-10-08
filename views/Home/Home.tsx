@@ -18,6 +18,7 @@ import {
   getGoogleNameSuggestion,
   isUsernameTakenOnline,
   LOCAL_NAME_TAKEN_ONLINE_ERROR,
+  needsIdentitySwitch,
 } from './Home.helpers';
 import { getStyles } from './Home.styles';
 
@@ -47,13 +48,23 @@ export default function HomeView() {
   const [isRegistering, setIsRegistering] = useState(false);
   const auth = useSupabaseAuth();
 
-  useEffect(() => {
-    if (playerName !== null) {
-      setScreen('game');
-    }
-  }, [playerName, setScreen]);
-
   const claimedUsername = auth.profile?.username ?? null;
+  const hasOnlineIdentity = auth.user !== null && auth.profile !== null && !auth.requiresUsername;
+
+  useEffect(() => {
+    if (playerName === null) return;
+    // Username único: con perfil reclamado la sesión local debe ser el
+    // nombre online. Si se jugaba como "x" y el perfil es "y",
+    // cambiamos a "y" en vez de seguir como "x".
+    if (hasOnlineIdentity && claimedUsername !== null) {
+      if (needsIdentitySwitch(playerName, claimedUsername)) {
+        void registerPlayer(claimedUsername).then(() => setScreen('game'));
+        return;
+      }
+    }
+    setScreen('game');
+  }, [playerName, setScreen, hasOnlineIdentity, claimedUsername, registerPlayer]);
+
   const lockedName = claimedUsername ?? lastUsername;
 
   const handleClaimLocal = async (username: string) => {
@@ -119,9 +130,9 @@ export default function HomeView() {
             onSignOut={auth.signOut}
           />
           <AppButton
-            title="Ver ranking"
-            accessibilityLabel="Ver ranking"
-            variant="ghostlight"
+            title="Ranking"
+            accessibilityLabel="Ranking"
+            variant="secondary"
             onPress={() => setScreen('ranking')}
           />
         </MainCard>
@@ -185,9 +196,9 @@ export default function HomeView() {
             inputAccessibilityLabel="Nombre del jugador"
           />
           <AppButton
-            title="Ver ranking"
-            accessibilityLabel="Ver ranking"
-            variant="ghostlight"
+            title="Ranking"
+            accessibilityLabel="Ranking"
+            variant="secondary"
             onPress={() => setScreen('ranking')}
           />
           {renderAuthBox()}
@@ -224,9 +235,9 @@ export default function HomeView() {
           onPress={handlePlayLocked}
         />
         <AppButton
-          title="Ver ranking"
-          accessibilityLabel="Ver ranking"
-          variant="ghostlight"
+          title="Ranking"
+          accessibilityLabel="Ranking"
+          variant="secondary"
           onPress={() => setScreen('ranking')}
         />
         {renderAuthBox()}

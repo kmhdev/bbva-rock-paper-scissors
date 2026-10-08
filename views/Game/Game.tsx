@@ -14,6 +14,7 @@ import { useIsMobilePlatform } from '../../hooks/useIsMobilePlatform';
 import { useSupabaseAuth } from '../../hooks/useSupabaseAuth';
 import { getChoicesForMode } from '../../services/gameLogicService';
 import { randomMachineStrategy, smartMachineStrategy } from '../../services/machineStrategies';
+import { ScoreService } from '../../services/scoreService';
 import { submitOnlineScore } from '../../services/supabaseScoreStorage';
 import { useGameStore } from '../../store/appStore';
 import type { Choice, SegmentedToggleOption } from '../../types/types';
@@ -47,6 +48,8 @@ export default function GameView() {
   const machineThinking = useGameStore((state) => state.machineThinking);
   const auth = useSupabaseAuth();
   const revealTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const claimedUsername = auth.profile?.username ?? null;
+  const hasOnlineIdentity = auth.user !== null && auth.profile !== null && !auth.requiresUsername;
 
   useEffect(() => {
     return () => {
@@ -61,6 +64,20 @@ export default function GameView() {
       setScreen('home');
     }
   }, [playerName, setScreen]);
+
+  // Username único: con perfil reclamado no se puede jugar como otro
+  // nombre local ("x"); la marca de "x" nunca debe enviarse como "y".
+  useEffect(() => {
+    if (
+      hasOnlineIdentity &&
+      claimedUsername !== null &&
+      playerName !== null &&
+      !ScoreService.isSameUsername(playerName, claimedUsername)
+    ) {
+      useGameStore.getState().exitToHome();
+      setScreen('home');
+    }
+  }, [hasOnlineIdentity, claimedUsername, playerName, setScreen]);
 
   if (playerName === null) {
     return null;
@@ -90,8 +107,13 @@ export default function GameView() {
         }
         if (settled.outcome === 'win' && settled.playerName !== null) {
           // El servidor resuelve el nombre desde el perfil reclamado;
-          // sin login o sin perfil la marca queda solo en local.
-          if (auth.user !== null && auth.profile !== null && !auth.requiresUsername) {
+          // sin login, sin perfil o jugando como otro nombre local ("x"
+          // vs perfil "y") la marca queda solo en local.
+          if (
+            hasOnlineIdentity &&
+            claimedUsername !== null &&
+            ScoreService.isSameUsername(settled.playerName, claimedUsername)
+          ) {
             void submitOnlineScore(settled.score);
           }
         }

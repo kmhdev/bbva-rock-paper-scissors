@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Animated } from 'react-native';
+import { useSupabaseAuth } from '../../hooks/useSupabaseAuth';
 import type { ThemeColors } from '../../types/types';
 import {
   SIDEBAR_WIDTH,
@@ -100,4 +101,24 @@ export function useThemeFade(toggleTheme: () => void) {
   };
 
   return { themeFade, handleThemeChange };
+}
+
+export function useSidebarAuth(onClose: () => void) {
+  const auth = useSupabaseAuth();
+  const isVisible = auth.isConfigured && !auth.isLoading && auth.user !== null;
+
+  const handleAuthPress = () => {
+    void auth.signOut();
+    onClose();
+  };
+
+  return {
+    isVisible,
+    error: auth.error,
+    label: 'Cerrar sesión',
+    icon: 'log-out-outline',
+    accessibilityLabel: 'Cerrar sesión de Google',
+    testID: 'sidebar-logout',
+    handleAuthPress,
+  };
 }

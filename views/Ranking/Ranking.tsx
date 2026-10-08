@@ -17,7 +17,12 @@ import {
 } from '../../services/supabaseScoreStorage';
 import { getScoreService, useGameStore } from '../../store/appStore';
 import type { PlayerScore } from '../../types/types';
-import { getLocalCurrentScore, shouldShowClaim } from './Ranking.helpers';
+import {
+  getAuthenticatedLocalScore,
+  getLocalCurrentScore,
+  shouldShowClaim,
+  shouldSubmitOnlineScore,
+} from './Ranking.helpers';
 import { getStyles } from './Ranking.styles';
 
 /** Bonus ranking view: mejor marca por jugador, una sola puntuación. */
@@ -51,20 +56,29 @@ export default function RankingView() {
     };
   }, []);
 
-  const localCurrent = useMemo(
-    () => getLocalCurrentScore(playerName, lastUsername, storeScore, localScores),
-    [playerName, lastUsername, storeScore, localScores],
-  );
-
   const isAuthenticatedWithProfile =
     auth.user !== null && auth.profile !== null && !auth.requiresUsername;
+
+  const localCurrent = useMemo(() => {
+    if (isAuthenticatedWithProfile && auth.profile) {
+      // Con perfil reclamado la marca actual es la del nombre online;
+      // la marca de otro nombre local ("x" vs "y") no se reclama.
+      return getAuthenticatedLocalScore(auth.profile.username, playerName, storeScore, localScores);
+    }
+    return getLocalCurrentScore(playerName, lastUsername, storeScore, localScores);
+  }, [playerName, lastUsername, storeScore, localScores, isAuthenticatedWithProfile, auth.profile]);
+
   const showClaim = shouldShowClaim(localCurrent, auth.isConfigured, isAuthenticatedWithProfile);
 
   useEffect(() => {
-    if (isAuthenticatedWithProfile && localCurrent !== null) {
+    if (
+      isAuthenticatedWithProfile &&
+      localCurrent !== null &&
+      shouldSubmitOnlineScore(localCurrent, auth.profile?.username ?? null)
+    ) {
       void submitOnlineScore(localCurrent.score);
     }
-  }, [isAuthenticatedWithProfile, localCurrent]);
+  }, [isAuthenticatedWithProfile, localCurrent, auth.profile]);
 
   return (
     <View style={styles.rankingScreen}>

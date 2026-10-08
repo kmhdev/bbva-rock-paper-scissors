@@ -76,6 +76,12 @@ export const getSidebarStyles = (theme: ThemeColors) =>
       fontFamily: 'monospace',
       fontWeight: '700',
     },
+    authError: {
+      fontSize: 14,
+      color: theme.danger,
+      fontFamily: 'monospace',
+      marginBottom: 8,
+    },
   });
 
 export const OVERLAY_MAX_OPACITY = 0.32;
