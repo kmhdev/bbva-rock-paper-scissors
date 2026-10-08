@@ -121,7 +121,7 @@ export default function GameView() {
             <ChoiceButton
               key={choice}
               choice={choice}
-              selected={playerPick === choice}
+              selected={playerPick === choice && outcome === null}
               disabled={machineThinking}
               onPress={handlePick}
             />
