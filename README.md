@@ -62,5 +62,5 @@ npm run build:web  # genera la carpeta dist/
 Hace cuatro años ya hice esta prueba 😄
 Para comparar el progreso dejo los enlaces:
 
-- **Repo:** : https://github.com/kmhdev/bbva-rock-paper-scissors-old
+- **Repo**: https://github.com/kmhdev/bbva-rock-paper-scissors-old
 - **App desplegada**: https://bbva-rock-paper-scissors-old.vercel.app/
